@@ -84,9 +84,15 @@ ZenGoBox acts as a unified command-line tool. Here are the core commands you'll 
 | `zengobox restart` | Restarts the proxy service instantly. |
 | `zengobox toggle` | Toggles the proxy state (used by Magisk Action button). |
 | `zengobox status` | Checks the running status and PID of the proxy core. |
+| `zengobox setup [core]` | Extracts templates, downloads GeoIP, Kernel, and Web Dashboard. |
 | `zengobox config check` | Validates the syntax of your `zengobox.yaml`. |
 | `zengobox log` | Displays a real-time tail of the daemon logs. |
-| `zengobox update all` | Updates the kernel, geo databases, and subscriptions simultaneously. |
+| `zengobox update kernel` | Downloads the latest proxy core binary (e.g., Mihomo/Sing-box). |
+| `zengobox update geo` | Updates `geoip.dat` and `geosite.dat` routing databases. |
+| `zengobox update sub` | Updates your provider subscription links. |
+| `zengobox update dash` | Updates the Web UI Dashboard (Zashboard). |
+| `zengobox update all` | Runs all update commands (kernel, geo, sub, dash) sequentially. |
+| `zengobox daemon` | Background watcher process (handles boot and network changes). |
 | `zengobox version` | Displays the binary version, architecture, and root environment. |
 | `zengobox completion` | Generates shell autocomplete scripts (Bash/Zsh/Fish). |
 
