@@ -84,16 +84,28 @@ var setupCmd = &cobra.Command{
 		extractEmbeddedConfigs(baseDir, target)
 		
 		geoTarget := target
+		var loadedCfg *config.Config
 		if geoTarget == "all" || geoTarget == "" {
-			if loadedCfg, err := config.Load(cfgFile); err == nil {
-				geoTarget = loadedCfg.Core.BinName
+			if cfg, err := config.Load(cfgFile); err == nil {
+				loadedCfg = cfg
+				geoTarget = cfg.Core.BinName
 			} else {
 				geoTarget = "clash" // fallback default
 			}
+		} else {
+			loadedCfg, _ = config.Load(cfgFile)
 		}
 		
 		fmt.Printf("Downloading geo databases for %s (this might take a while)...\n", geoTarget)
 		_ = updater.UpdateGeo(baseDir, geoTarget)
+
+		if loadedCfg != nil {
+			fmt.Printf("Downloading core binary for %s...\n", loadedCfg.Core.BinName)
+			_ = updater.UpdateKernel(loadedCfg.Core.BinName, loadedCfg)
+
+			fmt.Println("Downloading dashboard UI...")
+			_ = updater.UpdateDashboard(loadedCfg)
+		}
 
 		fmt.Println("Setup complete! You can now edit", cfgFile)
 	},

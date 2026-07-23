@@ -52,6 +52,17 @@ func UpdateDashboard(cfg *config.Config) error {
 		return fmt.Errorf("failed to extract dashboard: %w", err)
 	}
 
+	// Remove top-level directory if the zip wraps everything inside one folder
+	entries, _ := os.ReadDir(destUIPath)
+	if len(entries) == 1 && entries[0].IsDir() {
+		subDir := filepath.Join(destUIPath, entries[0].Name())
+		subEntries, _ := os.ReadDir(subDir)
+		for _, e := range subEntries {
+			_ = os.Rename(filepath.Join(subDir, e.Name()), filepath.Join(destUIPath, e.Name()))
+		}
+		_ = os.Remove(subDir)
+	}
+
 	slog.Info("Dashboard UI updated successfully!", "path", destUIPath)
 	return nil
 }
