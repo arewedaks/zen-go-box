@@ -53,8 +53,23 @@ Run the setup command from your chosen directory. It will automatically extract 
 # Navigate to your folder
 cd /data/local/tmp/myproxy/
 
-# One-command full setup for Clash (Default)
+# Setup for Clash (Default)
 su -c "./zengobox setup clash"
+
+# Setup for Sing-box
+su -c "./zengobox setup sing-box"
+
+# Setup for Xray
+su -c "./zengobox setup xray"
+
+# Setup for v2fly
+su -c "./zengobox setup v2fly"
+
+# Setup for Hysteria
+su -c "./zengobox setup hysteria"
+
+# Or setup ALL cores simultaneously
+su -c "./zengobox setup all"
 ```
 *Note: You can edit the main configuration at `zengobox.yaml` in your folder after setup.*
 
