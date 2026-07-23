@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🛡️ ZenGoBox</h1>
-  <p><strong>A Modern, Golang-based Transparent Proxy Manager for Rooted Android</strong></p>
+  <p><strong>An Ultra-Fast & Portable Transparent Proxy Manager for Rooted Android</strong></p>
 
   <p>
     <img src="https://img.shields.io/badge/Language-Go-00ADD8?style=for-the-badge&logo=go" alt="Golang" />
