@@ -43,6 +43,15 @@ func (m *Manager) Start() error {
 	_ = m.Stop() // Coba hentikan via box.pid
 	_ = exec.Command("killall", "-9", m.cfg.Core.BinName).Run() // Sapu bersih zombie process
 
+	// Tampilkan informasi konfigurasi yang digunakan
+	slog.Info("========================================")
+	slog.Info("ZenGoBox Configuration Loaded:")
+	slog.Info(fmt.Sprintf("- Core Binary  : %s (Clash Option: %s)", m.cfg.Core.BinName, m.cfg.Core.ClashOption))
+	slog.Info(fmt.Sprintf("- Network Mode : %s (IPv6: %v)", m.cfg.Network.Mode, m.cfg.Network.IPv6))
+	slog.Info(fmt.Sprintf("- Proxy Mode   : %s", m.cfg.Proxy.Mode))
+	slog.Info(fmt.Sprintf("- TProxy Port  : %d", m.cfg.Network.TProxyPort))
+	slog.Info("========================================")
+
 	// 1. Dapatkan injector berdasarkan bin_name
 	var injector Injector
 	switch m.cfg.Core.BinName {
