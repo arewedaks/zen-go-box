@@ -56,11 +56,21 @@ func CleanAllNetfilter() {
 	cleanTable(ipt6, "mangle", chains)
 
 	// Bersihkan rules ip rule & ip route jika ada
-	// Mencegah error jika rules sudah terhapus
-	execIgnoreError("ip", "rule", "del", "fwmark", FWMark, "table", TableID)
-	execIgnoreError("ip", "route", "del", "local", "default", "dev", "lo", "table", TableID)
-	execIgnoreError("ip", "-6", "rule", "del", "fwmark", FWMark, "table", TableID)
-	execIgnoreError("ip", "-6", "route", "del", "local", "default", "dev", "lo", "table", TableID)
+	// Loop untuk menghapus semua duplicate ip rules (jika crash berulang)
+	for {
+		if err := exec.Command("ip", "rule", "del", "fwmark", FWMark, "table", TableID).Run(); err != nil {
+			break
+		}
+	}
+	for {
+		if err := exec.Command("ip", "-6", "rule", "del", "fwmark", FWMark, "table", TableID).Run(); err != nil {
+			break
+		}
+	}
+
+	// Gunakan flush untuk memastikan table routing benar-benar kosong
+	execIgnoreError("ip", "route", "flush", "table", TableID)
+	execIgnoreError("ip", "-6", "route", "flush", "table", TableID)
 }
 
 func execIgnoreError(name string, args ...string) {
