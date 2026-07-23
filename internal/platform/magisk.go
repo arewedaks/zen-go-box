@@ -1,8 +1,12 @@
 package platform
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
 )
 
 type RootEnv string
@@ -45,4 +49,36 @@ func IsModuleEnabled(modID string) bool {
 		return false
 	}
 	return true
+}
+
+// UpdateModulePropDescription modifies the module.prop description field dynamically.
+func UpdateModulePropDescription(modID string, prefixMsg string) error {
+	propFile := filepath.Join(GetModuleDir(modID), "module.prop")
+	content, err := os.ReadFile(propFile)
+	if err != nil {
+		return err
+	}
+
+	lines := strings.Split(string(content), "\n")
+	modified := false
+	
+	// Regex to match an existing bracket prefix (e.g., "[ 10:45 | ⭕ clash running ] ")
+	re := regexp.MustCompile(`^description=(\[.*?\]\s*)?(.*)$`)
+
+	for i, line := range lines {
+		if strings.HasPrefix(line, "description=") {
+			matches := re.FindStringSubmatch(line)
+			if len(matches) == 3 {
+				originalDesc := matches[2]
+				lines[i] = fmt.Sprintf("description=[ %s | %s ] %s", time.Now().Format("15:04"), prefixMsg, originalDesc)
+				modified = true
+				break
+			}
+		}
+	}
+
+	if modified {
+		return os.WriteFile(propFile, []byte(strings.Join(lines, "\n")), 0644)
+	}
+	return nil
 }

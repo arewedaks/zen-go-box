@@ -15,6 +15,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/arewedaks/zen-go-box/internal/cgroup"
 	"github.com/arewedaks/zen-go-box/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/platform"
 	"github.com/arewedaks/zen-go-box/internal/updater"
 )
 
@@ -132,6 +133,7 @@ func (m *Manager) Start() error {
 		if logFile != nil {
 			logFile.Close()
 		}
+		_ = platform.UpdateModulePropDescription("zengobox", fmt.Sprintf("⚠️ Your %s configuration has an error, check the log", m.cfg.Core.BinName))
 		return fmt.Errorf("failed to start proxy core process: %w", err)
 	}
 
@@ -145,6 +147,7 @@ func (m *Manager) Start() error {
 	}
 
 	slog.Info("Proxy core started successfully", "bin", m.cfg.Core.BinName, "pid", cmd.Process.Pid)
+	_ = platform.UpdateModulePropDescription("zengobox", fmt.Sprintf("⭕ %s service is running!!!", m.cfg.Core.BinName))
 
 	// 6. Terapkan Cgroup Limits jika diaktifkan
 	if err := cgroup.Apply(cmd.Process.Pid, m.cfg); err != nil {
@@ -209,6 +212,7 @@ func (m *Manager) Stop() error {
 		m.running = false
 		m.cmd = nil
 		slog.Info("Proxy core stopped successfully")
+		_ = platform.UpdateModulePropDescription("zengobox", fmt.Sprintf("❌ %s shutting down, service is stopped !!!", m.cfg.Core.BinName))
 		return nil
 	}
 
@@ -235,6 +239,7 @@ func (m *Manager) Stop() error {
 
 	m.running = false
 	slog.Info("Proxy core stopped successfully")
+	_ = platform.UpdateModulePropDescription("zengobox", fmt.Sprintf("❌ %s shutting down, service is stopped !!!", m.cfg.Core.BinName))
 	return nil
 }
 
@@ -312,6 +317,7 @@ func (m *Manager) watchProcess(logFile *os.File) {
 
 	if err != nil {
 		slog.Warn("Proxy core process exited with error", "error", err)
+		_ = platform.UpdateModulePropDescription("zengobox", "⚠️ Module is working! but no service is running")
 		// TODO: Implementasi crash recovery / auto restart dengan exponential backoff
 	} else {
 		slog.Info("Proxy core process exited cleanly")
