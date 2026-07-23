@@ -107,6 +107,7 @@ var setupCmd = &cobra.Command{
 			_ = updater.UpdateDashboard(loadedCfg)
 		}
 
+		_ = platform.UpdateModulePropDescription("zengobox", "😴 System is Idle (Ready to start)")
 		fmt.Println("Setup complete! You can now edit", cfgFile)
 	},
 }

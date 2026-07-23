@@ -3,4 +3,4 @@ name=ZenGoBox
 version=v1.0.0
 versionCode=10000
 author=arewedaks
-description=A Modern, Golang-based Transparent Proxy Manager.
+description=[ ⚠️ Action Required: Run 'zengobox setup' in Terminal ] A Modern, Golang-based Transparent Proxy Manager.
