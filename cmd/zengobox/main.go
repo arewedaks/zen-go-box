@@ -78,8 +78,17 @@ var setupCmd = &cobra.Command{
 		fmt.Printf("Extracting %s configurations to %s ...\n", target, baseDir)
 		extractEmbeddedConfigs(baseDir, target)
 		
-		fmt.Printf("Downloading geo databases for %s (this might take a while)...\n", target)
-		_ = updater.UpdateGeo(baseDir, target)
+		geoTarget := target
+		if geoTarget == "all" || geoTarget == "" {
+			if loadedCfg, err := config.Load(cfgFile); err == nil {
+				geoTarget = loadedCfg.Core.BinName
+			} else {
+				geoTarget = "clash" // fallback default
+			}
+		}
+		
+		fmt.Printf("Downloading geo databases for %s (this might take a while)...\n", geoTarget)
+		_ = updater.UpdateGeo(baseDir, geoTarget)
 
 		fmt.Println("Setup complete! You can now edit", cfgFile)
 	},
