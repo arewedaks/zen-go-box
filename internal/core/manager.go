@@ -38,6 +38,10 @@ func (m *Manager) Start() error {
 		return fmt.Errorf("service is already running")
 	}
 
+	// 0. Pastikan tidak ada proses zombie dari proxy sebelumnya yang masih menyangkut
+	_ = m.Stop() // Coba hentikan via box.pid
+	_ = exec.Command("killall", "-9", m.cfg.Core.BinName).Run() // Sapu bersih zombie process
+
 	// 1. Dapatkan injector berdasarkan bin_name
 	var injector Injector
 	switch m.cfg.Core.BinName {
