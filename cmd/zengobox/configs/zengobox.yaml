@@ -1,0 +1,79 @@
+# zengobox.yaml
+core:
+  bin_name: "sing-box"
+  bin_list:
+    - sing-box
+    - clash
+    - xray
+    - v2fly
+    - hysteria
+  clash_option: "mihomo"
+
+network:
+  mode: "tproxy"
+  tproxy_port: 9898
+  redir_port: 9797
+  ipv6: false
+  quic_block: false
+
+proxy:
+  mode: "blacklist"
+  packages: []
+  gids: []
+  ap_list:
+    allow:
+      - "ap+"
+      - "wlan+"
+      - "rndis+"
+      - "swlan+"
+      - "ncm+"
+      - "eth+"
+    ignore: []
+
+process:
+  user_group: "root:net_admin"
+  max_restarts: 5
+  restart_window: "5m"
+  restart_backoff: "3s"
+
+cgroup:
+  memcg:
+    enabled: false
+    limit: "100M"
+  cpuset:
+    enabled: false
+  blkio:
+    enabled: false
+
+paths:
+  box_dir: "/data/adb/zengobox"
+  bin_dir: "/data/adb/zengobox/bin"
+  run_dir: "/data/adb/zengobox/run"
+  log_dir: "/data/adb/zengobox/run"
+
+subscription:
+  clash_urls: []
+  singbox_url: ""
+  renew: false
+
+geo:
+  auto_update: false
+
+schedule:
+  enabled: false
+  cron: "0 0,6,12,18 * * *"
+  update_geo: false
+  update_subscription: false
+
+wifi:
+  enabled: false
+  use_on_wifi: false
+  use_on_disconnect: true
+  ssid_matching: false
+  ssid_mode: "blacklist"
+  ssid_list: []
+
+log:
+  level: "info"
+  max_size: "1M"
+  toast: true
