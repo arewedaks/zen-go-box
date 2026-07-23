@@ -14,6 +14,7 @@ import (
 	"github.com/arewedaks/zengobox/internal/core"
 	"github.com/arewedaks/zengobox/internal/logger"
 	"github.com/arewedaks/zengobox/internal/platform"
+	"github.com/arewedaks/zengobox/internal/updater"
 )
 
 //go:embed configs/*
@@ -76,6 +77,10 @@ var setupCmd = &cobra.Command{
 		}
 		fmt.Printf("Extracting %s configurations to %s ...\n", target, baseDir)
 		extractEmbeddedConfigs(baseDir, target)
+		
+		fmt.Printf("Downloading geo databases for %s (this might take a while)...\n", target)
+		_ = updater.UpdateGeo(baseDir, target)
+
 		fmt.Println("Setup complete! You can now edit", cfgFile)
 	},
 }

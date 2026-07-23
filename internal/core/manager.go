@@ -150,7 +150,7 @@ func (m *Manager) Start() error {
 		if m.cfg.Schedule.UpdateGeo {
 			_, _ = m.scheduler.AddFunc(m.cfg.Schedule.Cron, func() {
 				slog.Info("[Cron] Triggering auto geo update...")
-				_ = updater.UpdateGeo(m.cfg)
+				_ = updater.UpdateGeo(m.cfg.Paths.BoxDir, m.cfg.Core.BinName)
 			})
 		}
 		// Tambahkan job update subscription

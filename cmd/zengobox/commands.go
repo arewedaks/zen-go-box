@@ -216,7 +216,7 @@ var updateGeoCmd = &cobra.Command{
 	Short: "Update GeoIP & GeoSite databases",
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("Starting geodata update...")
-		if err := updater.UpdateGeo(cfg); err != nil {
+		if err := updater.UpdateGeo(cfg.Paths.BoxDir, cfg.Core.BinName); err != nil {
 			slog.Error("Geodata update failed", "error", err)
 			os.Exit(1)
 		}
@@ -253,7 +253,7 @@ var updateAllCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("Starting full update...")
 		_ = updater.UpdateKernel(cfg.Core.BinName, cfg)
-		_ = updater.UpdateGeo(cfg)
+		_ = updater.UpdateGeo(cfg.Paths.BoxDir, cfg.Core.BinName)
 		_ = updater.UpdateSubscription(cfg)
 		_ = updater.UpdateDashboard(cfg)
 		slog.Info("Full update completed.")
