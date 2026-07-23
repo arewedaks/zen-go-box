@@ -115,8 +115,12 @@ func (m *Manager) Start() error {
 		Credential: &syscall.Credential{Uid: uid, Gid: gid},
 	}
 
-	// Set environment variables tambahan untuk asset location (xray/v2fly)
+	// Set environment variables tambahan untuk asset location (xray/v2fly) dan Memory Optimization
 	cmd.Env = os.Environ()
+	// Optimasi RAM untuk aplikasi berbasis Go (mencegah pemborosan RAM oleh Garbage Collector)
+	cmd.Env = append(cmd.Env, "GOMEMLIMIT=150MiB")
+	cmd.Env = append(cmd.Env, "GOGC=30")
+
 	if m.cfg.Core.BinName == "xray" {
 		cmd.Env = append(cmd.Env, "XRAY_LOCATION_ASSET="+m.cfg.Paths.BoxDir)
 	} else if m.cfg.Core.BinName == "v2fly" {
