@@ -118,7 +118,12 @@ type LogConfig struct {
 func DefaultConfig() *Config {
 	var baseDir string
 	if exePath, err := os.Executable(); err == nil {
-		baseDir = filepath.Dir(filepath.Dir(exePath))
+		execDir := filepath.Dir(exePath)
+		if filepath.Base(execDir) == "bin" {
+			baseDir = filepath.Dir(execDir)
+		} else {
+			baseDir = execDir
+		}
 	} else {
 		baseDir = "/data/adb/zengobox"
 	}

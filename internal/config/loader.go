@@ -25,7 +25,11 @@ func Load(path string) (*Config, error) {
 
 	// Make it portable: Override loaded YAML paths with actual binary location
 	if exePath, err := os.Executable(); err == nil {
-		baseDir := filepath.Dir(filepath.Dir(exePath))
+		execDir := filepath.Dir(exePath)
+		baseDir := execDir
+		if filepath.Base(execDir) == "bin" {
+			baseDir = filepath.Dir(execDir)
+		}
 		cfg.Paths.BoxDir = baseDir
 		cfg.Paths.BinDir = filepath.Join(baseDir, "bin")
 		cfg.Paths.RunDir = filepath.Join(baseDir, "run")
