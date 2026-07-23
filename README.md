@@ -96,17 +96,7 @@ ZenGoBox acts as a unified command-line tool. Here are the core commands you'll 
 | `zengobox version` | Displays the binary version, architecture, and root environment. |
 | `zengobox completion` | Generates shell autocomplete scripts (Bash/Zsh/Fish). |
 
-## 🏗️ Building from Source
 
-To compile the binary yourself, simply run the `make` command:
-```bash
-# Clone the repository
-git clone https://github.com/arewedaks/zen-go-box.git
-cd zen-go-box
-
-# Build for Android ARM64
-make build-arm64
-```
 
 ## 📜 License
 This project is open-source and heavily inspired by the original `box_for_magisk` concept, evolved into a full-fledged Go application.
