@@ -34,13 +34,13 @@ func (t *TProxyMode) Setup(cfg *config.Config) error {
 	if err := exec.Command("ip", "rule", "add", "fwmark", FWMark, "table", TableID, "pref", RulePref).Run(); err != nil {
 		slog.Warn("Failed to add ip rule v4", "error", err)
 	}
-	if err := exec.Command("ip", "route", "add", "local", "default", "dev", "lo", "table", TableID).Run(); err != nil {
-		slog.Warn("Failed to add ip route v4", "error", err)
+	if err := exec.Command("ip", "route", "replace", "local", "default", "dev", "lo", "table", TableID).Run(); err != nil {
+		slog.Warn("Failed to replace ip route v4", "error", err)
 	}
 
 	if cfg.Network.IPv6 {
 		_ = exec.Command("ip", "-6", "rule", "add", "fwmark", FWMark, "table", TableID, "pref", RulePref).Run()
-		_ = exec.Command("ip", "-6", "route", "add", "local", "default", "dev", "lo", "table", TableID).Run()
+		_ = exec.Command("ip", "-6", "route", "replace", "local", "default", "dev", "lo", "table", TableID).Run()
 	}
 
 	// 3. Buat chain ZENNODE_EXTERNAL & ZENNODE_LOCAL di mangle table
