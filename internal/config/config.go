@@ -125,7 +125,7 @@ func DefaultConfig() *Config {
 
 	return &Config{
 		Core: CoreConfig{
-			BinName:     "sing-box",
+			BinName:     "clash",
 			BinList:     []string{"sing-box", "clash", "xray", "v2fly", "hysteria"},
 			ClashOption: "mihomo",
 		},

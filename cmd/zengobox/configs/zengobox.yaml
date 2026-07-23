@@ -1,6 +1,6 @@
 # zengobox.yaml
 core:
-  bin_name: "sing-box"
+  bin_name: "clash"
   bin_list:
     - sing-box
     - clash
