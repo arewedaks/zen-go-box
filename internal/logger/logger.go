@@ -51,8 +51,14 @@ func InitLogger(logDir string, levelStr string, maxSizeStr string) error {
 	// Lakukan log rotation jika file terlalu besar
 	rotateLogIfNeeded(logPath, parseSize(maxSizeStr))
 
+	openFlags := os.O_WRONLY | os.O_CREATE | os.O_APPEND
+	// Jika command yang dipanggil adalah 'daemon' (saat HP boot / service dinyalakan), hapus bersih log lama
+	if len(os.Args) > 1 && os.Args[1] == "daemon" {
+		openFlags = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+	}
+
 	var err error
-	logFile, err = os.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logFile, err = os.OpenFile(logPath, openFlags, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open log file: %w", err)
 	}
