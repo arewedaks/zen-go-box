@@ -36,21 +36,27 @@
 ## 🛠️ Getting Started
 
 ### 1. Installation
-Simply push the compiled `zengobox` binary to your root directory (e.g., `/data/adb/zengobox/bin/`) and set the execution permission:
+Because ZenGoBox is **100% portable**, you can place the binary in *any* directory. It will automatically detect its location and build the proxy environment right there!
+
+For example, let's set it up in a custom folder:
 ```bash
-su -c "chmod 755 /data/adb/zengobox/bin/zengobox"
+# Create a folder and push the binary
+mkdir -p /data/local/tmp/myproxy
+cp zengobox /data/local/tmp/myproxy/
+su -c "chmod 755 /data/local/tmp/myproxy/zengobox"
 ```
+*(If you are building a Magisk Module, placing it in `/data/adb/zengobox/bin/zengobox` is recommended, and the system will intelligently use `/data/adb/zengobox` as the root).*
 
 ### 2. Initialization & Setup
-Run the setup command to extract default configurations and automatically download the required Geo databases:
+Run the setup command from your chosen directory. It will automatically extract templates, download Geo databases, fetch the proxy kernel, and install the Web Dashboard in one go!
 ```bash
-# Setup for Clash (Default)
-su -c "zengobox setup clash"
+# Navigate to your folder
+cd /data/local/tmp/myproxy/
 
-# Or setup for a different core
-su -c "zengobox setup xray"
+# One-command full setup for Clash (Default)
+su -c "./zengobox setup clash"
 ```
-*Note: You can edit the main configuration at `/data/adb/zengobox/zengobox.yaml` after setup.*
+*Note: You can edit the main configuration at `zengobox.yaml` in your folder after setup.*
 
 ## 💻 CLI Commands
 
