@@ -33,7 +33,7 @@ func NewModuleWatcher(cfg *config.Config, mgr *core.Manager) (*ModuleWatcher, er
 
 func (mw *ModuleWatcher) Start() {
 	// Pantau directory modul untuk file "disable"
-	watchDir := filepath.Join("/data/adb/modules", "box_for_root")
+	watchDir := filepath.Join("/data/adb/modules", "zengobox")
 	if _, err := os.Stat(watchDir); err != nil {
 		// Fallback dev
 		watchDir = "."
