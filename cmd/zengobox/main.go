@@ -31,6 +31,9 @@ var rootCmd = &cobra.Command{
 	Short: "ZenGoBox daemon core transparent proxy manager",
 	Long:  `ZenGoBox is a transparent proxy service daemon for rooted Android systems.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if cmd.Name() == "setup" || cmd.Name() == "version" || cmd.Name() == "help" {
+			return
+		}
 		initApp()
 	},
 }
@@ -47,6 +50,7 @@ func init() {
 
 	// Tambahkan command version langsung
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(setupCmd)
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(configCheckCmd)
 }
@@ -58,6 +62,16 @@ var versionCmd = &cobra.Command{
 		fmt.Printf("zengobox version: %s\n", version)
 		fmt.Printf("OS/Arch:      android/%s\n", platform.GetArch())
 		fmt.Printf("Root Env:     %s\n", platform.DetectRootEnv())
+	},
+}
+
+var setupCmd = &cobra.Command{
+	Use:   "setup",
+	Short: "Extract default configurations and folders",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Extracting embedded configurations to", baseDir, "...")
+		extractEmbeddedConfigs(baseDir)
+		fmt.Println("Setup complete! You can now edit", cfgFile)
 	},
 }
 
@@ -113,9 +127,6 @@ func extractEmbeddedConfigs(dest string) {
 }
 
 func initApp() {
-	// Auto create config directory and extract ALL default configs/templates
-	extractEmbeddedConfigs(baseDir)
-
 	// Load configuration
 	var err error
 	cfg, err = config.Load(cfgFile)
