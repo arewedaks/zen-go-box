@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/arewedaks/zengobox/internal/logger"
-	"github.com/arewedaks/zengobox/internal/netfilter"
-	"github.com/arewedaks/zengobox/internal/network"
-	"github.com/arewedaks/zengobox/internal/updater"
+	"github.com/arewedaks/zen-go-box/internal/logger"
+	"github.com/arewedaks/zen-go-box/internal/netfilter"
+	"github.com/arewedaks/zen-go-box/internal/network"
+	"github.com/arewedaks/zen-go-box/internal/updater"
 )
 
 func init() {

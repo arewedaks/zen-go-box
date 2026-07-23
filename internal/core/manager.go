@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/robfig/cron/v3"
-	"github.com/arewedaks/zengobox/internal/cgroup"
-	"github.com/arewedaks/zengobox/internal/config"
-	"github.com/arewedaks/zengobox/internal/updater"
+	"github.com/arewedaks/zen-go-box/internal/cgroup"
+	"github.com/arewedaks/zen-go-box/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/updater"
 )
 
 type Manager struct {

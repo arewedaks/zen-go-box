@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/arewedaks/zengobox/internal/config"
-	"github.com/arewedaks/zengobox/internal/netfilter"
+	"github.com/arewedaks/zen-go-box/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/netfilter"
 )
 
 type NetworkWatcher struct {

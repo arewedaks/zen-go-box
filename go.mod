@@ -1,4 +1,4 @@
-module github.com/arewedaks/zengobox
+module github.com/arewedaks/zen-go-box
 
 go 1.25.0
 

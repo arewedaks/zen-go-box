@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/arewedaks/zengobox/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/config"
 )
 
 // UpdateSubscription mengunduh konfigurasi server / proxies dari subscription URLs

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/arewedaks/zengobox/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/config"
 )
 
 type XrayInjector struct{}

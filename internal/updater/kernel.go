@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/arewedaks/zengobox/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/config"
 )
 
 type KernelRepo struct {

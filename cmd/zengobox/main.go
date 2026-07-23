@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/arewedaks/zengobox/internal/config"
-	"github.com/arewedaks/zengobox/internal/core"
-	"github.com/arewedaks/zengobox/internal/logger"
-	"github.com/arewedaks/zengobox/internal/platform"
-	"github.com/arewedaks/zengobox/internal/updater"
+	"github.com/arewedaks/zen-go-box/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/core"
+	"github.com/arewedaks/zen-go-box/internal/logger"
+	"github.com/arewedaks/zen-go-box/internal/platform"
+	"github.com/arewedaks/zen-go-box/internal/updater"
 )
 
 //go:embed configs/*

@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"strconv"
 
-	"github.com/arewedaks/zengobox/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/config"
 )
 
 type RedirectMode struct {

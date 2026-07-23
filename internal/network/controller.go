@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/arewedaks/zengobox/internal/config"
-	"github.com/arewedaks/zengobox/internal/core"
+	"github.com/arewedaks/zen-go-box/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/core"
 )
 
 type ModuleWatcher struct {

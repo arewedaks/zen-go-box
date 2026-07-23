@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arewedaks/zengobox/internal/platform"
+	"github.com/arewedaks/zen-go-box/internal/platform"
 )
 
 type Release struct {

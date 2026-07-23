@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/arewedaks/zengobox/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/config"
 )
 
 // Apply Cgroup membatasi penggunaan resource CPU, memori, & disk IO untuk PID proxy core
