@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/arewedaks/zengobox/internal/config"
@@ -66,11 +67,15 @@ var versionCmd = &cobra.Command{
 }
 
 var setupCmd = &cobra.Command{
-	Use:   "setup",
-	Short: "Extract default configurations and folders",
+	Use:   "setup [core]",
+	Short: "Extract default configurations (clash, xray, sing-box, v2fly, hysteria, or all)",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Extracting embedded configurations to", baseDir, "...")
-		extractEmbeddedConfigs(baseDir)
+		target := "all"
+		if len(args) > 0 {
+			target = args[0]
+		}
+		fmt.Printf("Extracting %s configurations to %s ...\n", target, baseDir)
+		extractEmbeddedConfigs(baseDir, target)
 		fmt.Println("Setup complete! You can now edit", cfgFile)
 	},
 }
@@ -94,7 +99,7 @@ var configCheckCmd = &cobra.Command{
 
 
 
-func extractEmbeddedConfigs(dest string) {
+func extractEmbeddedConfigs(dest string, targetCore string) {
 	err := fs.WalkDir(defaultConfigs, "configs", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -103,6 +108,15 @@ func extractEmbeddedConfigs(dest string) {
 		relPath, _ := filepath.Rel("configs", path)
 		if relPath == "." || relPath == ".." || relPath == "" {
 			return nil
+		}
+
+		// Jika pengguna hanya meminta core tertentu (misal: "clash"), kita lewati folder lain
+		// Catatan: zengobox.yaml (file induk) akan selalu ikut diekstrak
+		if relPath != "zengobox.yaml" && targetCore != "" && targetCore != "all" {
+			// Mengecek apakah file/folder ini merupakan bagian dari targetCore (contoh: "clash/")
+			if !strings.HasPrefix(relPath, targetCore) {
+				return nil
+			}
 		}
 
 		targetPath := filepath.Join(dest, relPath)
