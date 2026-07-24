@@ -48,25 +48,25 @@ su -c "chmod 755 /data/local/tmp/myproxy/zengobox"
 *(If you are building a Magisk Module, placing it in `/data/adb/zengobox/bin/zengobox` is recommended, and the system will intelligently use `/data/adb/zengobox` as the root).*
 
 ### 2. Initialization & Setup
-Run the setup command from your chosen terminal (e.g., Termux or Android Shell). It will automatically request root, extract templates, download Geo databases, fetch the proxy kernel, and install the Web Dashboard in one go!
+Run the setup command from your terminal (e.g., Termux) using root privileges. It will extract templates, download Geo databases, fetch the proxy kernel, and install the Web Dashboard in one go!
 ```bash
 # Setup for Clash (Default)
-zengobox setup clash
+su -c "/data/adb/zengobox/bin/zengobox setup clash"
 
 # Setup for Sing-box
-zengobox setup sing-box
+su -c "/data/adb/zengobox/bin/zengobox setup sing-box"
 
 # Setup for Xray
-zengobox setup xray
+su -c "/data/adb/zengobox/bin/zengobox setup xray"
 
 # Setup for v2fly
-zengobox setup v2fly
+su -c "/data/adb/zengobox/bin/zengobox setup v2fly"
 
 # Setup for Hysteria
-zengobox setup hysteria
+su -c "/data/adb/zengobox/bin/zengobox setup hysteria"
 
 # Or setup ALL cores simultaneously
-zengobox setup all
+su -c "/data/adb/zengobox/bin/zengobox setup all"
 ```
 *Note: You can edit the main configuration at `zengobox.yaml` in your folder after setup.*
 
