@@ -1,6 +1,6 @@
 id=zengobox
 name=ZenGoBox
-version=v1.0.0
-versionCode=10000
+version=v1.0.2
+versionCode=10002
 author=arewedaks
 description=[ ⚙️ Action Required: Run 'zengobox setup' in Terminal ] An Ultra-Fast & Portable Transparent Proxy Manager.
