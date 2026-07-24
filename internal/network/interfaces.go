@@ -3,7 +3,6 @@ package network
 import (
 	"log/slog"
 	"os"
-	"os/exec"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -81,59 +80,17 @@ func (nw *NetworkWatcher) Stop() {
 }
 
 func (nw *NetworkWatcher) refreshIPRules() {
-	slog.Info("Network state changed. Refreshing local IP netfilter rules...")
+	slog.Info("Network state changed. Refreshing all netfilter rules...")
 
-	v4, v6, err := netfilter.GetLocalIPs()
+	mode, err := netfilter.GetMode(nw.cfg)
 	if err != nil {
-		slog.Error("Failed to get local IPs for refresh", "error", err)
+		slog.Error("Failed to get netfilter mode for refresh", "error", err)
 		return
 	}
 
-	ipt4 := netfilter.NewIPT("iptables")
-	ipt6 := netfilter.NewIPT("ip6tables")
-
-	// 0. Pulihkan (Re-apply) policy routing rules!
-	// Saat mode pesawat (airplane mode) di-toggle, daemon network Android (netd) sering kali me-reset 'ip rule'.
-	// Oleh karena itu, kita harus memasang ulang rule routing TPROXY ini.
-	_ = exec.Command("ip", "rule", "add", "fwmark", netfilter.FWMark, "table", netfilter.TableID, "pref", netfilter.RulePref).Run()
-	_ = exec.Command("ip", "route", "replace", "local", "default", "dev", "lo", "table", netfilter.TableID).Run()
-	
-	if nw.cfg.Network.IPv6 {
-		_ = exec.Command("ip", "-6", "rule", "add", "fwmark", netfilter.FWMark, "table", netfilter.TableID, "pref", netfilter.RulePref).Run()
-		_ = exec.Command("ip", "-6", "route", "replace", "local", "default", "dev", "lo", "table", netfilter.TableID).Run()
+	if err := mode.Setup(nw.cfg); err != nil {
+		slog.Error("Failed to re-apply netfilter rules", "error", err)
+	} else {
+		slog.Info("Netfilter rules successfully refreshed")
 	}
-
-	// 1. Bersihkan rules chain LOCAL_IP di mangle table
-	// Mangle table
-	ipt4.ExecIgnoreError("-t", "mangle", "-F", "ZENNODE_EXTERNAL")
-	ipt6.ExecIgnoreError("-t", "mangle", "-F", "ZENNODE_EXTERNAL")
-
-	// Mencegah loopback dengan mengizinkan (RETURN) IP lokal di PREROUTING mangle
-	for _, ip := range v4 {
-		_ = ipt4.Exec("-t", "mangle", "-I", "ZENNODE_EXTERNAL", "-d", ip, "-j", "RETURN")
-	}
-
-	if nw.cfg.Network.IPv6 {
-		for _, ip := range v6 {
-			_ = ipt6.Exec("-t", "mangle", "-I", "ZENNODE_EXTERNAL", "-d", ip, "-j", "RETURN")
-		}
-	}
-
-	// 2. Lakukan hal yang sama untuk nat table (jika menggunakan redirect/mixed)
-	if nw.cfg.Network.Mode == "redirect" || nw.cfg.Network.Mode == "mixed" || nw.cfg.Network.Mode == "enhance" {
-		ipt4.ExecIgnoreError("-t", "nat", "-F", "ZENNODE_EXTERNAL")
-		ipt6.ExecIgnoreError("-t", "nat", "-F", "ZENNODE_EXTERNAL")
-
-		for _, ip := range v4 {
-			_ = ipt4.Exec("-t", "nat", "-I", "ZENNODE_EXTERNAL", "-d", ip, "-j", "RETURN")
-		}
-
-		if nw.cfg.Network.IPv6 {
-			for _, ip := range v6 {
-				_ = ipt6.Exec("-t", "nat", "-I", "ZENNODE_EXTERNAL", "-d", ip, "-j", "RETURN")
-			}
-		}
-	}
-
-	slog.Info("Local IP rules refreshed", "v4_count", len(v4), "v6_count", len(v6))
 }
