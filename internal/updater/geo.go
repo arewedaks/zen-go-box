@@ -1,6 +1,7 @@
 package updater
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -30,8 +31,12 @@ func UpdateGeo(baseDir string, targetCore string) error {
 		geositeDest := filepath.Join(destDir, "geosite.dat")
 
 		slog.Info("Updating geo databases...", "target", core)
-		_ = downloader.DownloadFile(geoipURL, geoipDest, false)
-		_ = downloader.DownloadFile(geositeURL, geositeDest, false)
+		if err := downloader.DownloadFile(geoipURL, geoipDest, true); err != nil {
+			return fmt.Errorf("failed to download geoip.dat: %w", err)
+		}
+		if err := downloader.DownloadFile(geositeURL, geositeDest, true); err != nil {
+			return fmt.Errorf("failed to download geosite.dat: %w", err)
+		}
 	}
 
 	slog.Info("Geo databases downloaded successfully!")

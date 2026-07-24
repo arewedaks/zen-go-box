@@ -54,7 +54,7 @@ func UpdateKernel(name string, cfg *config.Config) error {
 
 	downloader := NewDownloader()
 	// Gunakan mirror jika diaktifkan (kita anggap true untuk mempercepat di INA)
-	if err := downloader.DownloadFile(downloadURL, tempFile, false); err != nil {
+	if err := downloader.DownloadFile(downloadURL, tempFile, true); err != nil {
 		return fmt.Errorf("download failed: %w", err)
 	}
 

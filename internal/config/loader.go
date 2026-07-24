@@ -53,6 +53,12 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("invalid config: %w", err)
 	}
 
+	// Validate if core binary exists, otherwise mark as NeedsSetup
+	binPath := filepath.Join(cfg.Paths.BinDir, cfg.Core.BinName)
+	if _, err := os.Stat(binPath); os.IsNotExist(err) {
+		cfg.NeedsSetup = true
+	}
+
 	return cfg, nil
 }
 

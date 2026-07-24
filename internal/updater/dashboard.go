@@ -9,27 +9,18 @@ import (
 	"github.com/arewedaks/zen-go-box/internal/config"
 )
 
-// UpdateDashboard mendownload zashboard dashboard terbaru untuk UI control panel
-func UpdateDashboard(cfg *config.Config) error {
-	gh := NewGitHubClient()
-	slog.Info("Checking for latest zashboard UI release...")
-	rel, err := gh.FetchLatestRelease("Zephyruso", "zashboard")
-	if err != nil {
-		return fmt.Errorf("failed to fetch dashboard release: %w", err)
-	}
-
-	// Cari file asset zashboard.zip atau dist.zip
-	var downloadURL string
-	for _, asset := range rel.Assets {
-		if filepath.Ext(asset.Name) == ".zip" {
-			downloadURL = asset.BrowserDownloadURL
-			break
+// UpdateDashboard mendownload dashboard terbaru untuk UI control panel
+func UpdateDashboard(cfg *config.Config, dashboardURL string) error {
+	if dashboardURL == "" || dashboardURL == "none" {
+		if dashboardURL == "none" {
+			slog.Info("Skipping dashboard installation.")
+			return nil
 		}
+		// Default
+		dashboardURL = "https://github.com/Zephyruso/zashboard/archive/gh-pages.zip"
 	}
 
-	if downloadURL == "" {
-		return fmt.Errorf("could not find dashboard zip asset in release")
-	}
+	slog.Info("Downloading dashboard UI...", "url", dashboardURL)
 
 	tempDir := filepath.Join(cfg.Paths.RunDir, "dashboard_temp")
 	_ = os.RemoveAll(tempDir)
@@ -39,7 +30,7 @@ func UpdateDashboard(cfg *config.Config) error {
 	archivePath := filepath.Join(tempDir, "dashboard.zip")
 
 	downloader := NewDownloader()
-	if err := downloader.DownloadFile(downloadURL, archivePath, false); err != nil {
+	if err := downloader.DownloadFile(dashboardURL, archivePath, true); err != nil {
 		return fmt.Errorf("failed to download dashboard: %w", err)
 	}
 

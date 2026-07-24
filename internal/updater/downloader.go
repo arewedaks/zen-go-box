@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
+	"context"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -19,9 +21,20 @@ type Downloader struct {
 	client *http.Client
 }
 
+var GlobalMirror string = "auto"
+
 func NewDownloader() *Downloader {
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{Timeout: 10 * time.Second}
+			return d.DialContext(ctx, "udp", "8.8.8.8:53")
+		},
+	}
+	dialer := &net.Dialer{Resolver: resolver}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		DialContext:     dialer.DialContext,
 	}
 	return &Downloader{
 		client: &http.Client{
@@ -31,15 +44,47 @@ func NewDownloader() *Downloader {
 	}
 }
 
-// DownloadFile mengunduh url ke filepath tujuan, opsional menggunakan mirror ghproxy
-func (d *Downloader) DownloadFile(url string, dest string, useMirror bool) error {
-	if useMirror && strings.Contains(url, "github.com") {
-		// Gunakan ghproxy mirror
-		url = "https://mirror.ghproxy.com/" + url
+// DownloadFile mengunduh url ke filepath tujuan, opsional menggunakan mirror
+func (d *Downloader) DownloadFile(originalURL string, dest string, useMirror bool) error {
+	var urlsToTry []string
+
+	if useMirror && strings.Contains(originalURL, "github.com") {
+		if GlobalMirror == "direct" {
+			urlsToTry = []string{originalURL}
+		} else if GlobalMirror == "ghproxy" {
+			urlsToTry = []string{"https://mirror.ghproxy.com/" + originalURL}
+		} else {
+			// Daftar mirror fallback (auto)
+			urlsToTry = []string{
+				"https://mirror.ghproxy.com/" + originalURL,
+				"https://ghproxy.net/" + originalURL,
+				"https://gh-proxy.com/" + originalURL,
+				originalURL, // Fallback terakhir: direct download
+			}
+		}
+	} else {
+		urlsToTry = []string{originalURL}
 	}
 
-	slog.Info("Downloading...", "url", url)
+	var lastErr error
 
+	for _, tryURL := range urlsToTry {
+		slog.Info("Downloading...", "url", tryURL)
+		
+		// Gunakan fungsi helper agar defer response ditutup dengan benar ditiap iterasi
+		err := d.doDownload(tryURL, dest)
+		if err == nil {
+			return nil // Berhasil
+		}
+		
+		slog.Warn("Download failed, trying next fallback...", "error", err)
+		lastErr = err
+	}
+
+	return fmt.Errorf("all mirrors failed, last error: %w", lastErr)
+}
+
+func (d *Downloader) doDownload(url string, dest string) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -56,7 +101,6 @@ func (d *Downloader) DownloadFile(url string, dest string, useMirror bool) error
 		return fmt.Errorf("server returned status: %d", resp.StatusCode)
 	}
 
-	// Buat directory tujuan jika belum ada
 	if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
 		return err
 	}
@@ -67,7 +111,6 @@ func (d *Downloader) DownloadFile(url string, dest string, useMirror bool) error
 	}
 	defer out.Close()
 
-	// Track progress download
 	total := resp.ContentLength
 	counter := &writeCounter{total: total}
 	_, err = io.Copy(out, io.TeeReader(resp.Body, counter))

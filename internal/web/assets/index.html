@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zashboard | ZenGoBox</title>
+    <title>ZenGoBox WebUI</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -39,6 +39,26 @@
                         <option value="v2fly">V2fly (v2ray)</option>
                         <option value="hysteria">Hysteria 2</option>
                         <option value="all">Install All Cores</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-top: 15px;">
+                    <select id="setup-mirror" class="form-control select-large" style="font-size: 0.9rem;">
+                        <option value="auto">Download Source: Auto (Recommended)</option>
+                        <option value="direct">Download Source: Direct GitHub (No Mirror)</option>
+                        <option value="ghproxy">Download Source: GHProxy Mirror Only</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px; margin-bottom: 20px;">
+                    <select id="setup-dashboard" class="form-control select-large" style="font-size: 0.9rem;">
+                        <option value="https://github.com/Zephyruso/zashboard/archive/gh-pages.zip">Dashboard: Zashboard (Default)</option>
+                        <option value="https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip">Dashboard: Yacd-meta</option>
+                        <option value="https://github.com/taamarin/yacd-meta/archive/gh-pages.zip">Dashboard: Yacd-meta (Taamarin)</option>
+                        <option value="https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip">Dashboard: MetaCubeXD</option>
+                        <option value="https://github.com/haishanh/yacd/archive/gh-pages.zip">Dashboard: Yacd (haishanh)</option>
+                        <option value="https://github.com/Dreamacro/clash-dashboard/archive/gh-pages.zip">Dashboard: Clash-Dashboard</option>
+                        <option value="none">Dashboard: None (Skip)</option>
                     </select>
                 </div>
                 

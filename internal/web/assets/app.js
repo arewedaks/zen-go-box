@@ -198,18 +198,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Setup Wizard Logic
     const btnStartSetup = document.getElementById('btn-start-setup');
+    const logsPanel = document.getElementById('setup-logs-panel');
+    const setupTerminal = document.getElementById('setup-terminal');
+    const setupStatusText = document.getElementById('setup-status-text');
+
+    function startPolling() {
+        const pollInterval = setInterval(async () => {
+            try {
+                const res = await fetch('/api/setup_log');
+                const text = await res.text();
+                if (text && text.trim() !== "" && text !== "Waiting for logs...") {
+                    setupTerminal.innerText = text;
+                    setupTerminal.scrollTop = setupTerminal.scrollHeight;
+                }
+                
+                if (text.includes("Setup complete!")) {
+                    clearInterval(pollInterval);
+                    setupStatusText.innerText = "Setup complete! Restarting daemon...";
+                    setupStatusText.style.color = "#10b981";
+                    
+                    // Restart daemon so it loads the new config and drops Setup Mode
+                    await fetch('/api/restart', { method: 'POST' });
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else if (text.includes("[SETUP_FAILED]")) {
+                    clearInterval(pollInterval);
+                    setupStatusText.innerText = "Setup failed. Check the logs above.";
+                    setupStatusText.style.color = "#ef4444"; // Red color
+                    btnStartSetup.disabled = false;
+                    btnStartSetup.innerHTML = 'Retry Installation';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }, 1000);
+    }
+
     if (btnStartSetup) {
         btnStartSetup.addEventListener('click', async () => {
             const core = document.getElementById('setup-core').value;
-            const btn = document.getElementById('btn-start-setup');
-            const logsPanel = document.getElementById('setup-logs-panel');
-            const setupTerminal = document.getElementById('setup-terminal');
-            const setupStatusText = document.getElementById('setup-status-text');
+            const mirror = document.getElementById('setup-mirror').value;
+            const dashboard = document.getElementById('setup-dashboard').value;
 
-            btn.disabled = true;
-            btn.innerHTML = 'Installing...';
+            btnStartSetup.disabled = true;
+            btnStartSetup.innerHTML = 'Installing...';
             logsPanel.style.display = 'block';
             setupTerminal.innerText = "> Preparing environment...\n";
 
@@ -217,39 +252,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 await fetch('/api/setup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ core: core })
+                    body: JSON.stringify({ core: core, mirror: mirror, dashboard: dashboard })
                 });
 
-                const pollInterval = setInterval(async () => {
-                    try {
-                        const res = await fetch('/api/setup_log');
-                        const text = await res.text();
-                        if (text && text.trim() !== "") {
-                            setupTerminal.innerText = text;
-                            setupTerminal.scrollTop = setupTerminal.scrollHeight;
-                        }
-                        
-                        if (text.includes("Setup complete!")) {
-                            clearInterval(pollInterval);
-                            setupStatusText.innerText = "Setup complete! Restarting daemon...";
-                            
-                            // Restart daemon so it loads the new config and drops Setup Mode
-                            await fetch('/api/restart', { method: 'POST' });
-                            
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 3000);
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }, 1000);
-
+                startPolling();
             } catch (e) {
                 alert('Setup failed: ' + e.message);
-                btn.disabled = false;
-                btn.innerHTML = '🚀 Start Installation';
+                btnStartSetup.disabled = false;
+                btnStartSetup.innerHTML = '🚀 Start Installation';
             }
         });
+
+        // Auto-resume checking
+        const checkExistingSetup = async () => {
+            try {
+                const res = await fetch('/api/setup_log');
+                const text = await res.text();
+                // If there's a log, and it hasn't failed, and hasn't completed, and isn't just waiting
+                if (text && text.trim() !== "" && text !== "Waiting for logs..." && !text.includes("[SETUP_FAILED]") && !text.includes("Setup complete!")) {
+                    btnStartSetup.disabled = true;
+                    btnStartSetup.innerHTML = 'Installing... (Resumed)';
+                    logsPanel.style.display = 'block';
+                    setupTerminal.innerText = text;
+                    setupTerminal.scrollTop = setupTerminal.scrollHeight;
+                    
+                    // Resume polling without triggering a new setup
+                    startPolling();
+                }
+            } catch (e) {}
+        };
+        setTimeout(checkExistingSetup, 500);
     }
 });

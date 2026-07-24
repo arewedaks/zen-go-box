@@ -42,7 +42,7 @@ The easiest way to use ZenGoBox is by installing it as a systemless module:
 2. Flash the ZIP file via **Magisk Manager**, **KernelSU**, or **APatch**.
 3. Reboot your device.
 4. Open the Magisk / KernelSU app, go to the Modules tab, and tap the **Action/WebUI** button on the ZenGoBox module.
-5. The **Zashboard (WebUI)** will open automatically at `http://127.0.0.1:9999`. From there, you can install proxy cores, manage configurations, and start/stop the service seamlessly!
+5. The **ZenGoBox WebUI** will open automatically at `http://127.0.0.1:9999`. From there, you can install proxy cores, manage configurations, and start/stop the service seamlessly!
 
 ### Method 2: Manual Portable Setup (For Advanced Users)
 Because ZenGoBox is **100% portable**, you can place the binary in *any* directory. It will automatically detect its location and build the proxy environment right there!
@@ -79,7 +79,7 @@ ZenGoBox acts as a unified command-line tool. Here are the core commands you'll 
 | `zengobox update kernel` | Downloads the latest proxy core binary (e.g., Mihomo/Sing-box). |
 | `zengobox update geo` | Updates `geoip.dat` and `geosite.dat` routing databases. |
 | `zengobox update sub` | Updates your provider subscription links. |
-| `zengobox update dash` | Updates the Web UI Dashboard (Zashboard). |
+| `zengobox update dash` | Updates the Web UI Dashboard. |
 | `zengobox update all` | Runs all update commands (kernel, geo, sub, dash) sequentially. |
 | `zengobox daemon` | Background watcher process (handles boot and network changes). |
 | `zengobox version` | Displays the binary version, architecture, and root environment. |

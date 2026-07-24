@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -94,12 +95,13 @@ var restartCmd = &cobra.Command{
 		// 1. Mulai Core jika diizinkan oleh Smart Wi-Fi
 		if shouldStart {
 			if err := mgr.Start(); err != nil {
-				slog.Error("Failed to start proxy core", "error", err)
+				slog.Error("Failed to start proxy core, skipping iptables setup", "error", err)
+			} else {
+				mode, err := netfilter.GetMode(cfg)
+				if err == nil {
+					_ = mode.Setup(cfg)
+				}
 			}
-		}
-		mode, err := netfilter.GetMode(cfg)
-		if err == nil {
-			_ = mode.Setup(cfg)
 		}
 		fmt.Println("Service restarted successfully.")
 	},
@@ -120,23 +122,44 @@ var statusCmd = &cobra.Command{
 
 var toggleCmd = &cobra.Command{
 	Use:   "toggle",
-	Short: "Toggle proxy service core on/off",
+	Short: "Toggle ZenGoBox daemon and proxy on/off",
 	Run: func(cmd *cobra.Command, args []string) {
-		running, _ := mgr.Status()
-		if running {
-			netfilter.CleanAllNetfilter()
-			_ = mgr.Stop()
-			fmt.Println("Service toggled OFF.")
-		} else {
-			if err := mgr.Start(); err != nil {
-				slog.Error("Failed to start service during toggle", "error", err)
-				os.Exit(1)
+		pidFile := filepath.Join(cfg.Paths.RunDir, "zengobox.pid")
+		if oldPidBytes, err := os.ReadFile(pidFile); err == nil {
+			oldPid := strings.TrimSpace(string(oldPidBytes))
+			if oldPid != "" {
+				// Cek apakah proses tersebut benar-benar ada
+				if err := exec.Command("kill", "-0", oldPid).Run(); err == nil {
+					slog.Info("Toggling OFF: Stopping daemon and proxy", "pid", oldPid)
+					_ = exec.Command("kill", "-9", oldPid).Run()
+					os.Remove(pidFile)
+					netfilter.CleanAllNetfilter()
+					_ = mgr.Stop()
+					fmt.Println("ZenGoBox Daemon & Proxy toggled OFF.")
+					return
+				}
 			}
-			mode, err := netfilter.GetMode(cfg)
-			if err == nil {
-				_ = mode.Setup(cfg)
+		}
+
+		// Jika tidak ada pid file atau proses mati, hidupkan daemon
+		slog.Info("Toggling ON: Starting ZenGoBox Daemon")
+		cmdRun := exec.Command("sh", "-c", "nohup /data/adb/zengobox/bin/zengobox daemon > /dev/null 2>&1 &")
+		if err := cmdRun.Start(); err != nil {
+			slog.Error("Failed to start daemon", "error", err)
+			os.Exit(1)
+		}
+		fmt.Println("ZenGoBox Daemon toggled ON. Fetching logs...")
+		time.Sleep(1500 * time.Millisecond) // Tunggu sebentar agar daemon sempat menulis log
+
+		logPath := filepath.Join(cfg.Paths.LogDir, "runs.log")
+		if content, err := os.ReadFile(logPath); err == nil {
+			lines := strings.Split(strings.TrimSpace(string(content)), "\n")
+			if len(lines) > 20 {
+				lines = lines[len(lines)-20:] // Ambil 20 baris terakhir
 			}
-			fmt.Println("Service toggled ON.")
+			fmt.Println("\n--- ZenGoBox Logs ---")
+			fmt.Println(strings.Join(lines, "\n"))
+			fmt.Println("---------------------")
 		}
 	},
 }
@@ -173,10 +196,13 @@ var daemonCmd = &cobra.Command{
 
 		// 1. Start proxy core service if conditions met (and not in setup mode)
 		if shouldStart {
-			_ = mgr.Start()
-			mode, err := netfilter.GetMode(cfg)
-			if err == nil {
-				_ = mode.Setup(cfg)
+			if err := mgr.Start(); err == nil {
+				mode, err := netfilter.GetMode(cfg)
+				if err == nil {
+					_ = mode.Setup(cfg)
+				}
+			} else {
+				slog.Error("Failed to start proxy core, bypassing iptables setup", "error", err)
 			}
 		}
 
@@ -203,7 +229,7 @@ var daemonCmd = &cobra.Command{
 			defer scheduler.Stop()
 		}
 
-		// 4. Start Zashboard Web Server
+		// 4. Start ZenGoBox Web Server
 		web.StartServer(mgr)
 
 		select {} // Keep running
@@ -292,7 +318,7 @@ var updateDashboardCmd = &cobra.Command{
 	Short: "Update dashboard web UI panel",
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("Starting dashboard update...")
-		if err := updater.UpdateDashboard(cfg); err != nil {
+		if err := updater.UpdateDashboard(cfg, ""); err != nil {
 			slog.Error("Dashboard update failed", "error", err)
 			os.Exit(1)
 		}
@@ -307,7 +333,7 @@ var updateAllCmd = &cobra.Command{
 		_ = updater.UpdateKernel(cfg.Core.BinName, cfg)
 		_ = updater.UpdateGeo(cfg.Paths.BoxDir, cfg.Core.BinName)
 		_ = updater.UpdateSubscription(cfg)
-		_ = updater.UpdateDashboard(cfg)
+		_ = updater.UpdateDashboard(cfg, "")
 		slog.Info("Full update completed.")
 	},
 }

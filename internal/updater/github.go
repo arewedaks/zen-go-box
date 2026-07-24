@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net"
+	"context"
 	"net/http"
 	"strings"
 	"time"
@@ -26,8 +28,17 @@ type GitHubClient struct {
 }
 
 func NewGitHubClient() *GitHubClient {
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{Timeout: 10 * time.Second}
+			return d.DialContext(ctx, "udp", "8.8.8.8:53")
+		},
+	}
+	dialer := &net.Dialer{Resolver: resolver}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		DialContext:     dialer.DialContext,
 	}
 	return &GitHubClient{
 		client: &http.Client{

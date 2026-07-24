@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/arewedaks/zen-go-box/internal/core"
+	"github.com/arewedaks/zen-go-box/internal/netfilter"
 )
 
 //go:embed assets/*
@@ -50,9 +51,9 @@ func StartServer(mgr *core.Manager) {
 	}
 
 	go func() {
-		slog.Info("Zashboard Web UI started on http://127.0.0.1:9999 (Localhost Only)")
+		slog.Info("ZenGoBox Web UI started on http://127.0.0.1:9999 (Localhost Only)")
 		if err := s.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("Zashboard server failed", "error", err)
+			slog.Error("ZenGoBox Web UI server failed", "error", err)
 		}
 	}()
 }
@@ -78,7 +79,12 @@ func (s *Server) handleStart(w http.ResponseWriter, r *http.Request) {
 	// Start in background to prevent blocking HTTP response
 	go func() {
 		if err := s.mgr.Start(); err != nil {
-			slog.Error("Zashboard failed to start core", "error", err)
+			slog.Error("ZenGoBox Web UI failed to start core", "error", err)
+		} else {
+			mode, err := netfilter.GetMode(s.mgr.Config())
+			if err == nil {
+				_ = mode.Setup(s.mgr.Config())
+			}
 		}
 	}()
 	
@@ -92,6 +98,7 @@ func (s *Server) handleStop(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	netfilter.CleanAllNetfilter()
 	if err := s.mgr.Stop(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -182,7 +189,9 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Core string `json:"core"`
+		Core      string `json:"core"`
+		Mirror    string `json:"mirror"`
+		Dashboard string `json:"dashboard"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -194,16 +203,24 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 	_ = os.Remove(logFile)
 	
 	// Eksekusi setup core di background
-	cmd := exec.Command("/data/adb/zengobox/bin/zengobox", "setup", req.Core)
-	outFile, _ := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0644)
-	cmd.Stdout = outFile
-	cmd.Stderr = outFile
-	
-	err := cmd.Start()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	go func() {
+		args := []string{"setup", req.Core}
+		if req.Mirror != "" {
+			args = append(args, "--mirror="+req.Mirror)
+		}
+		if req.Dashboard != "" {
+			args = append(args, "--dashboard="+req.Dashboard)
+		}
+		cmd := exec.Command("/data/adb/zengobox/bin/zengobox", args...)
+		outFile, _ := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		defer outFile.Close()
+		cmd.Stdout = outFile
+		cmd.Stderr = outFile
+		
+		if err := cmd.Run(); err != nil {
+			outFile.WriteString("\n[SETUP_FAILED] " + err.Error() + "\n")
+		}
+	}()
 
 	w.WriteHeader(http.StatusOK)
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/arewedaks/zen-go-box/internal/config"
 	"github.com/arewedaks/zen-go-box/internal/core"
 	"github.com/arewedaks/zen-go-box/internal/logger"
+	"github.com/arewedaks/zen-go-box/internal/netfilter"
 	"github.com/arewedaks/zen-go-box/internal/platform"
 	"github.com/arewedaks/zen-go-box/internal/updater"
 )
@@ -25,7 +26,9 @@ var (
 	cfgFile string
 	baseDir string
 	cfg     *config.Config
-	mgr     *core.Manager
+	mgr        *core.Manager
+	mirrorFlag string
+	dashFlag   string
 )
 
 var rootCmd = &cobra.Command{
@@ -57,6 +60,8 @@ func init() {
 
 	// Tambahkan command version langsung
 	rootCmd.AddCommand(versionCmd)
+	setupCmd.Flags().StringVar(&mirrorFlag, "mirror", "auto", "Download mirror (auto, direct, ghproxy)")
+	setupCmd.Flags().StringVar(&dashFlag, "dashboard", "", "Dashboard UI zip URL")
 	rootCmd.AddCommand(setupCmd)
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(configCheckCmd)
@@ -76,6 +81,11 @@ var setupCmd = &cobra.Command{
 	Use:   "setup [core]",
 	Short: "Extract default configurations (clash, xray, sing-box, v2fly, hysteria, or all)",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Bersihkan iptables sebelum setup agar DNS tidak nyangkut (connection refused)
+		netfilter.CleanAllNetfilter()
+		
+		updater.GlobalMirror = mirrorFlag
+
 		target := "all"
 		if len(args) > 0 {
 			target = args[0]
@@ -97,14 +107,24 @@ var setupCmd = &cobra.Command{
 		}
 		
 		fmt.Printf("Downloading geo databases for %s (this might take a while)...\n", geoTarget)
-		_ = updater.UpdateGeo(baseDir, geoTarget)
+		if err := updater.UpdateGeo(baseDir, geoTarget); err != nil {
+			fmt.Printf("Error downloading geo databases: %v\n", err)
+			os.Exit(1)
+		}
 
 		if loadedCfg != nil {
 			fmt.Printf("Downloading core binary for %s...\n", loadedCfg.Core.BinName)
-			_ = updater.UpdateKernel(loadedCfg.Core.BinName, loadedCfg)
+			if err := updater.UpdateKernel(loadedCfg.Core.BinName, loadedCfg); err != nil {
+				fmt.Printf("Error downloading core binary: %v\n", err)
+				os.Exit(1)
+			}
 
-			fmt.Println("Downloading dashboard UI...")
-			_ = updater.UpdateDashboard(loadedCfg)
+			fmt.Println("Installing dashboard UI...")
+			if err := updater.UpdateDashboard(loadedCfg, dashFlag); err != nil {
+				fmt.Printf("Error downloading dashboard: %v\n", err)
+				// Dashboard failure might not be fatal, but let's be strict for setup
+				os.Exit(1)
+			}
 		}
 
 		_ = platform.UpdateModulePropDescription("zengobox", "☕ System is Ready (Idle)")
