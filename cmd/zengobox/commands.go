@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
+	"strings"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/arewedaks/zen-go-box/internal/logger"
@@ -143,6 +146,19 @@ var daemonCmd = &cobra.Command{
 	Short: "Run zengobox in daemon watch mode (handles boot and network changes)",
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("Running daemon watch mode...")
+
+		// Prevent multiple daemons by checking and writing a PID file
+		pidFile := filepath.Join(cfg.Paths.RunDir, "zengobox_daemon.pid")
+		if oldPidBytes, err := os.ReadFile(pidFile); err == nil {
+			oldPid := strings.TrimSpace(string(oldPidBytes))
+			if oldPid != "" {
+				slog.Info("Killing old daemon", "pid", oldPid)
+				_ = exec.Command("kill", "-9", oldPid).Run()
+			}
+		}
+		_ = os.MkdirAll(cfg.Paths.RunDir, 0755)
+		_ = os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
+		defer os.Remove(pidFile)
 
 		var shouldStart = true
 		if cfg.Wifi.Enabled {
