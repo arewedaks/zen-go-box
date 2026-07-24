@@ -37,6 +37,39 @@ jobs:
             exit 1
           fi
 
+      - name: Update OTA JSON & Changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin master
+          git checkout master
+          
+          # Generate Changelog
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            CHANGES=$(git log ${PREV_TAG}..HEAD --pretty=format:"* %s")
+          else
+            CHANGES=$(git log -1 --pretty=format:"* %s")
+          fi
+          
+          # Prepend changes to CHANGELOG.md
+          echo -e "## ${VERSION}\n\n${CHANGES}\n\n$(cat CHANGELOG.md)" > CHANGELOG.md
+          
+          # Generate update.json for Magisk/KernelSU
+          VERSION_CODE=$(grep versionCode shell/module.prop | cut -d= -f2)
+          cat <<EOF > update.json
+          {
+            "version": "${VERSION}",
+            "versionCode": ${VERSION_CODE},
+            "zipUrl": "https://github.com/${{ github.repository }}/releases/download/${VERSION}/ZenGoBox-Magisk-${VERSION}.zip",
+            "changelog": "https://raw.githubusercontent.com/${{ github.repository }}/master/CHANGELOG.md"
+          }
+          EOF
+          
+          git add update.json CHANGELOG.md
+          git commit -m "chore: Auto-update OTA JSON and Changelog for ${VERSION} [skip ci]" || true
+          git push origin master
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

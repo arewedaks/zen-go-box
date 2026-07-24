@@ -4,3 +4,4 @@ version=v1.0.13
 versionCode=10013
 author=arewedaks
 description=[ ⚙️ Action Required: Run 'zengobox setup' in Terminal ] An Ultra-Fast & Portable Transparent Proxy Manager.
+updateJson=https://raw.githubusercontent.com/arewedaks/zen-go-box/master/update.json
