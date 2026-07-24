@@ -1,0 +1,51 @@
+name: Release ZenGoBox
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Build Binaries and Magisk Module
+        run: |
+          make build-magisk
+          # Extract version from tag (e.g., v1.0.2)
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bin/zengobox-arm64
+            bin/zengobox-armv7
+            bin/ZenGoBox-Magisk-${{ env.VERSION }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send to Telegram Group Topic
+        run: |
+          # Fetch the ZIP file name dynamically based on the version
+          ZIP_FILE="bin/ZenGoBox-Magisk-${{ env.VERSION }}.zip"
+          
+          # Use curl to send a document to a specific topic in a Telegram group
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument" \
+            -F "chat_id=${{ secrets.TG_CHAT_ID }}" \
+            -F "message_thread_id=${{ secrets.TG_TOPIC_ID }}" \
+            -F "document=@$ZIP_FILE" \
+            -F "caption=🚀 *ZenGoBox ${{ env.VERSION }} Released!*%0A%0A📦 [Download on GitHub](https://github.com/${{ github.repository }}/releases/tag/${{ env.VERSION }})%0A%0A✨ What's new? Check out the GitHub release notes!" \
+            -F "parse_mode=Markdown"
