@@ -22,6 +22,7 @@
 - **Root Environment Agnostic:** Automatically detects and adapts to Magisk, KernelSU, or APatch.
 - **100% Portable:** The binary self-discovers its working directory, meaning it can run from *anywhere* in the filesystem.
 - **Auto-Extraction Setup:** Configurations and templates are embedded inside the binary and extracted automatically upon setup.
+- **Non-Destructive Config Management:** ZenGoBox intelligently intercepts your original `config.yaml` and safely builds a temporary `run.yaml` in memory, ensuring your original configurations and comments are never permanently altered or destroyed.
 - **Smart Geo Updater:** Built-in smart downloader for `geoip.dat` & `geosite.dat` that targets specific cores accurately.
 - **Modern CLI:** Enjoy a modern terminal experience with `bash`, `zsh`, and `fish` auto-completion support.
 
