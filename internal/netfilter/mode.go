@@ -48,7 +48,7 @@ func CleanAllNetfilter() {
 	}
 
 	// Bersihkan chain buatan kita
-	chains := []string{"ZENNODE_EXTERNAL", "ZENNODE_LOCAL", "CLASH_DNS_EXTERNAL", "CLASH_DNS_LOCAL"}
+	chains := []string{"ZENNODE_DIVERT", "ZENNODE_EXTERNAL", "ZENNODE_LOCAL", "CLASH_DNS_EXTERNAL", "CLASH_DNS_LOCAL"}
 	cleanTable(ipt4, "nat", chains)
 	cleanTable(ipt6, "nat", chains)
 
