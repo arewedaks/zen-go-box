@@ -13,7 +13,7 @@
 
 ## Overview
 
-**ZenGoBox** (formerly *Box for Magisk*) is a powerful, lightweight, and fully portable transparent proxy daemon manager. Designed exclusively for rooted Android devices (Magisk, KernelSU, APatch), it orchestrates network traffic rules (iptables) and manages proxy cores seamlessly without the bloat of traditional bash scripts.
+**ZenGoBox** is a powerful, lightweight, and fully portable transparent proxy daemon manager. Designed exclusively for rooted Android devices (Magisk, KernelSU, APatch), it orchestrates network traffic rules (iptables) and manages proxy cores seamlessly without the bloat of traditional bash scripts.
 
 ## Key Features
 
@@ -99,4 +99,4 @@ ZenGoBox acts as a unified command-line tool. Here are the core commands you'll 
 
 
 ## License
-This project is open-source and heavily inspired by the original `box_for_magisk` concept, evolved into a full-fledged Go application.
+This project is open-source software.
