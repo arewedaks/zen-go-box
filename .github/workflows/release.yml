@@ -63,16 +63,24 @@ jobs:
           
           # Jika ada TG_TOPIC_ID, kirim ke topik. Jika tidak, kirim ke chat utama.
           if [ -n "$TG_TOPIC_ID" ]; then
-            curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument" \
+            RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument" \
               -F chat_id="${TG_CHAT_ID}" \
               -F message_thread_id="${TG_TOPIC_ID}" \
               -F document=@"${{ env.ZIP_FILE }}" \
               -F caption="${CAPTION}" \
-              -F parse_mode="Markdown"
+              -F parse_mode="Markdown")
           else
-            curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument" \
+            RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument" \
               -F chat_id="${TG_CHAT_ID}" \
               -F document=@"${{ env.ZIP_FILE }}" \
               -F caption="${CAPTION}" \
-              -F parse_mode="Markdown"
+              -F parse_mode="Markdown")
+          fi
+          
+          echo "Telegram Response: $RESPONSE"
+          if echo "$RESPONSE" | grep -q "HTTP_STATUS:200"; then
+            echo "Successfully sent to Telegram!"
+          else
+            echo "Error sending to Telegram!"
+            exit 1
           fi
