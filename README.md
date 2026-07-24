@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🛡️ ZenGoBox</h1>
+  <h1>ZenGoBox</h1>
   <p><strong>An Ultra-Fast & Portable Transparent Proxy Manager for Rooted Android</strong></p>
 
   <p>
@@ -11,21 +11,21 @@
 
 ---
 
-## ⚡ Overview
+## Overview
 
 **ZenGoBox** (formerly *Box for Magisk*) is a powerful, lightweight, and fully portable transparent proxy daemon manager. Designed exclusively for rooted Android devices (Magisk, KernelSU, APatch), it orchestrates network traffic rules (iptables) and manages proxy cores seamlessly without the bloat of traditional bash scripts.
 
-## ✨ Key Features
+## Key Features
 
-- **🚀 Ultra-Fast & Efficient:** High-performance compiled binary with low memory footprint and zero shell-script overhead.
-- **🔄 Multi-Core Support:** Seamlessly integrates and orchestrates popular proxy cores.
-- **📱 Root Environment Agnostic:** Automatically detects and adapts to Magisk, KernelSU, or APatch.
-- **🧩 100% Portable:** The binary self-discovers its working directory, meaning it can run from *anywhere* in the filesystem.
-- **📦 Auto-Extraction Setup:** Configurations and templates are embedded inside the binary and extracted automatically upon setup.
-- **🤖 Smart Geo Updater:** Built-in smart downloader for `geoip.dat` & `geosite.dat` that targets specific cores accurately.
-- **🎛️ Cobra CLI:** Enjoy a modern terminal experience with `bash`, `zsh`, and `fish` auto-completion support.
+- **Ultra-Fast & Efficient:** High-performance compiled binary with low memory footprint and zero shell-script overhead.
+- **Multi-Core Support:** Seamlessly integrates and orchestrates popular proxy cores.
+- **Root Environment Agnostic:** Automatically detects and adapts to Magisk, KernelSU, or APatch.
+- **100% Portable:** The binary self-discovers its working directory, meaning it can run from *anywhere* in the filesystem.
+- **Auto-Extraction Setup:** Configurations and templates are embedded inside the binary and extracted automatically upon setup.
+- **Smart Geo Updater:** Built-in smart downloader for `geoip.dat` & `geosite.dat` that targets specific cores accurately.
+- **Modern CLI:** Enjoy a modern terminal experience with `bash`, `zsh`, and `fish` auto-completion support.
 
-## 🧩 Supported Cores
+## Supported Cores
 
 - [Mihomo (Clash)](https://github.com/MetaCubeX/mihomo) *(Default)*
 - [Sing-box](https://github.com/SagerNet/sing-box)
@@ -33,7 +33,7 @@
 - [v2ray-core (v2fly)](https://github.com/v2fly/v2ray-core)
 - [Hysteria](https://github.com/apernet/hysteria)
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### 1. Installation
 Because ZenGoBox is **100% portable**, you can place the binary in *any* directory. It will automatically detect its location and build the proxy environment right there!
@@ -73,7 +73,7 @@ su -c "./zengobox setup all"
 ```
 *Note: You can edit the main configuration at `zengobox.yaml` in your folder after setup.*
 
-## 💻 CLI Commands
+## CLI Commands
 
 ZenGoBox acts as a unified command-line tool. Here are the core commands you'll use:
 
@@ -98,5 +98,5 @@ ZenGoBox acts as a unified command-line tool. Here are the core commands you'll 
 
 
 
-## 📜 License
+## License
 This project is open-source and heavily inspired by the original `box_for_magisk` concept, evolved into a full-fledged Go application.
