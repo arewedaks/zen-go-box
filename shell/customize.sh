@@ -30,7 +30,20 @@ unzip -o "$ZIPFILE" 'action.sh' -d $MODPATH >&2
 unzip -o "$ZIPFILE" 'service.sh' -d $MODPATH >&2
 unzip -o "$ZIPFILE" 'module.prop' -d $MODPATH >&2
 
+# Create global command wrapper in system/bin
+ui_print "- Creating global 'zengobox' command..."
+mkdir -p $MODPATH/system/bin
+cat << 'EOF' > $MODPATH/system/bin/zengobox
+#!/system/bin/sh
+if [ "$(id -u)" -ne 0 ]; then
+    exec su -c "/data/adb/zengobox/bin/zengobox $@"
+else
+    exec /data/adb/zengobox/bin/zengobox "$@"
+fi
+EOF
+
 set_perm_recursive $MODPATH 0 0 0755 0755
 
 ui_print "- ZenGoBox installed successfully!"
-ui_print "- Please run 'su -c zengobox setup clash' from terminal after reboot"
+ui_print "- You can now type 'zengobox' from anywhere in your terminal!"
+ui_print "- Example: 'zengobox setup clash' (Run this after reboot)"
