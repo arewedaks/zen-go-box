@@ -1,5 +1,5 @@
 VERSION := $(shell git describe --tags --always 2>/dev/null || echo "v1.10.2-go")
-LDFLAGS := -s -w -X main.version=$(VERSION)
+LDFLAGS := -s -w -extldflags=-static -buildid= -X main.version=$(VERSION)
 GOBUILD := CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)"
 
 .PHONY: all build-arm64 build-armv7 compress clean
@@ -25,7 +25,7 @@ clean:
 	rm -rf bin/zengobox-*
 	rm -rf bin/ZenGoBox-Magisk-*.zip
 
-build-magisk: build-arm64 build-armv7
+build-magisk: build-arm64 build-armv7 compress
 	@echo "Packaging Universal Module (Magisk/KernelSU) for ARM64 & ARMv7..."
 	@rm -f bin/ZenGoBox-module-$(VERSION).zip
 	@mkdir -p bin/magisk-temp

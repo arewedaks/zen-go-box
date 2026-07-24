@@ -9,6 +9,9 @@ import (
 	"github.com/arewedaks/zen-go-box/internal/config"
 	"github.com/arewedaks/zen-go-box/internal/core"
 	"github.com/arewedaks/zen-go-box/internal/netfilter"
+	"net"
+	"os/exec"
+	"strings"
 )
 
 type NetworkWatcher struct {
@@ -16,6 +19,7 @@ type NetworkWatcher struct {
 	cfg     *config.Config
 	mgr     *core.Manager
 	done    chan bool
+	lastIPs string
 }
 
 func NewNetworkWatcher(cfg *config.Config, mgr *core.Manager) (*NetworkWatcher, error) {
@@ -61,7 +65,14 @@ func (nw *NetworkWatcher) Start() {
 						timer.Stop()
 					}
 					timer = time.AfterFunc(debounceDuration, func() {
-						nw.refreshIPRules()
+						currentIPs := nw.getCurrentIPs()
+						if currentIPs != nw.lastIPs {
+							slog.Debug("IP addresses changed, triggering network rules refresh.")
+							nw.lastIPs = currentIPs
+							nw.refreshIPRules()
+						} else {
+							slog.Debug("Network event detected, but IP addresses remain unchanged. Bypassing iptables refresh.")
+						}
 					})
 				}
 			case err, ok := <-nw.watcher.Errors:
@@ -80,6 +91,19 @@ func (nw *NetworkWatcher) Stop() {
 	nw.done <- true
 	nw.watcher.Close()
 	slog.Info("Network interface watcher stopped.")
+}
+
+func (nw *NetworkWatcher) getCurrentIPs() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+	var sb strings.Builder
+	for _, addr := range addrs {
+		sb.WriteString(addr.String())
+		sb.WriteString(",")
+	}
+	return sb.String()
 }
 
 func (nw *NetworkWatcher) refreshIPRules() {
@@ -115,4 +139,15 @@ func (nw *NetworkWatcher) refreshIPRules() {
 	} else {
 		slog.Info("Netfilter rules successfully refreshed")
 	}
+
+	// 1. Connection Reset (Robust Connection Tracking)
+	// Membunuh stale sockets agar aplikasi langsung reconnect tanpa menunggu timeout
+	slog.Info("Flushing stale connections to force immediate reconnect...")
+	
+	// Flush conntrack table agar kernel melupakan state lama
+	_ = exec.Command("conntrack", "-F").Run()
+	
+	// Jika tersedia di sistem, gunakan ss -K untuk mengirim SOCK_DESTROY (TCP RST)
+	// ss -K -t state established
+	_ = exec.Command("ss", "-K", "-t", "state", "established").Run()
 }

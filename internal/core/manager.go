@@ -23,8 +23,9 @@ type Manager struct {
 	cfg        *config.Config
 	cmd        *exec.Cmd
 	cancelFunc context.CancelFunc
-	running    bool
-	scheduler  *cron.Cron
+	running      bool
+	intendedStop bool
+	scheduler    *cron.Cron
 }
 
 func NewManager(cfg *config.Config) *Manager {
@@ -173,6 +174,13 @@ func (m *Manager) Start() error {
 		cmd.Env = append(cmd.Env, "V2RAY_LOCATION_ASSET="+m.cfg.Paths.BoxDir)
 	}
 
+	// 3.5 Dynamic SELinux Policy (Sepolicy) Injection
+	// Memastikan iptables dan socket binding tidak diblokir oleh OS (terutama Android 13+)
+	slog.Info("Injecting dynamic SELinux rules...")
+	_ = exec.Command("magiskpolicy", "--live", "allow system_server system_file file { execute_no_trans }").Run()
+	_ = exec.Command("magiskpolicy", "--live", "allow untrusted_app node tcp_socket { node_bind }").Run()
+	_ = exec.Command("magiskpolicy", "--live", "allow untrusted_app node udp_socket { node_bind }").Run()
+
 	// 4. Jalankan process
 	if err := cmd.Start(); err != nil {
 		if logFile != nil {
@@ -184,6 +192,7 @@ func (m *Manager) Start() error {
 
 	m.cmd = cmd
 	m.running = true
+	m.intendedStop = false
 
 	// 5. Tulis file PID
 	pidPath := filepath.Join(m.cfg.Paths.RunDir, "core.pid")
@@ -198,6 +207,11 @@ func (m *Manager) Start() error {
 	if err := cgroup.Apply(cmd.Process.Pid, m.cfg); err != nil {
 		slog.Warn("Failed to apply cgroup resource limits", "error", err)
 	}
+
+	// 6.5 Network Speedup (TCP BBR & Fast Open)
+	slog.Info("Applying network kernel optimizations (TCP BBR & Fast Open)...")
+	_ = exec.Command("sysctl", "-w", "net.ipv4.tcp_congestion_control=bbr").Run()
+	_ = exec.Command("sysctl", "-w", "net.ipv4.tcp_fastopen=3").Run()
 
 	// 7. Setup & Start Cron Scheduler untuk auto-update
 	if m.cfg.Schedule.Enabled {
@@ -240,6 +254,7 @@ func (m *Manager) Stop() error {
 
 	// 1. Jika kita memiliki control instance (same process)
 	if m.running && m.cmd != nil {
+		m.intendedStop = true
 		_ = os.Remove(pidPath)
 		if m.cancelFunc != nil {
 			m.cancelFunc()
@@ -351,21 +366,44 @@ func (m *Manager) prepareXClash() {
 }
 
 func (m *Manager) watchProcess(logFile *os.File) {
-	defer func() {
+	backoff := 1 * time.Second
+
+	for {
+		err := m.cmd.Wait()
+		
 		if logFile != nil {
 			logFile.Close()
 		}
-	}()
 
-	err := m.cmd.Wait()
-	m.running = false
+		if m.intendedStop {
+			m.running = false
+			slog.Info("Proxy core process exited cleanly")
+			break
+		}
 
-	if err != nil {
-		slog.Warn("Proxy core process exited with error", "error", err)
-		_ = platform.UpdateModulePropDescription("zengobox", fmt.Sprintf("💥 %s crashed unexpectedly!", m.cfg.Core.BinName))
-		// TODO: Implementasi crash recovery / auto restart dengan exponential backoff
-	} else {
-		slog.Info("Proxy core process exited cleanly")
+		m.running = false
+		slog.Warn("Proxy core process exited unexpectedly, attempting auto-recovery...", "error", err, "backoff", backoff)
+		_ = platform.UpdateModulePropDescription("zengobox", fmt.Sprintf("💥 %s crashed! Recovering in %v...", m.cfg.Core.BinName, backoff))
+		
+		time.Sleep(backoff)
+		
+		// Attempt to start again
+		slog.Info("Auto-recovering proxy core...")
+		if startErr := m.Start(); startErr != nil {
+			slog.Error("Auto-recovery failed", "error", startErr)
+			backoff = backoff * 2
+			if backoff > 1*time.Minute {
+				backoff = 1 * time.Minute
+			}
+			// Simulate log file close for the next loop since Start() didn't succeed
+			logFile = nil
+			continue
+		}
+		
+		// Jika start berhasil, goroutine Start() yang baru akan spawn watchProcess baru.
+		// Maka goroutine ini sudah bisa dimatikan.
+		slog.Info("Auto-recovery successful. Handing over to new watcher.")
+		break
 	}
 }
 

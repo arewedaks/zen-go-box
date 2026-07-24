@@ -25,6 +25,7 @@ type CoreConfig struct {
 	BinName     string            `yaml:"bin_name"`
 	BinList     []string          `yaml:"bin_list"`
 	ClashOption string            `yaml:"clash_option"`
+	APISecret   string            `yaml:"api_secret"`
 	ConfigNames map[string]string `yaml:"config_names"`
 }
 

@@ -75,6 +75,38 @@ func (s *SingboxInjector) Prepare(cfg *config.Config) error {
 
 	rawMap["inbounds"] = inbounds
 
+	// 2.5 API Secret Token & Dashboard Injection
+	experimentalRaw, exists := rawMap["experimental"]
+	var experimental map[string]interface{}
+	if exists {
+		if exp, ok := experimentalRaw.(map[string]interface{}); ok {
+			experimental = exp
+		}
+	}
+	if experimental == nil {
+		experimental = make(map[string]interface{})
+	}
+
+	clashApiRaw, exists := experimental["clash_api"]
+	var clashApi map[string]interface{}
+	if exists {
+		if ca, ok := clashApiRaw.(map[string]interface{}); ok {
+			clashApi = ca
+		}
+	}
+	if clashApi == nil {
+		clashApi = make(map[string]interface{})
+	}
+
+	clashApi["external_controller"] = "0.0.0.0:9090"
+	clashApi["external_ui"] = "dashboard"
+	if cfg.Core.APISecret != "" {
+		clashApi["secret"] = cfg.Core.APISecret
+	}
+
+	experimental["clash_api"] = clashApi
+	rawMap["experimental"] = experimental
+
 	// 3. Tulis config modifikasi ke folder run
 	outData, err := json.MarshalIndent(rawMap, "", "  ")
 	if err != nil {

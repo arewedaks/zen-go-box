@@ -46,6 +46,11 @@ func (c *ClashInjector) Prepare(cfg *config.Config) error {
 	rawMap["allow-lan"] = true
 	rawMap["bind-address"] = "*"
 
+	// 5. API Secret Token untuk Keamanan Dashboard
+	if cfg.Core.APISecret != "" {
+		rawMap["secret"] = cfg.Core.APISecret
+	}
+
 	// Paksa injeksi header CORS untuk akses dashboard dari browser eksternal (PC Desktop)
 	headersMap := map[string]interface{}{
 		"Access-Control-Allow-Origin": "*",

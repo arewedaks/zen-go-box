@@ -29,10 +29,14 @@ func Apply(pid int, cfg *config.Config) error {
 		}
 	}
 
-	// 2. CPUSet (CPU Pinning)
+	// 2. CPUSet (CPU Pinning ke Little Cores)
 	if cfg.Cgroup.CPUSet.Enabled {
 		cpusetDir := "/sys/fs/cgroup/cpuset/zengobox"
 		_ = os.MkdirAll(cpusetDir, 0755)
+
+		// Batasi proxy core agar hanya berjalan di LITTLE cores (hemat baterai)
+		_ = os.WriteFile(filepath.Join(cpusetDir, "cpuset.cpus"), []byte("0-3"), 0644)
+		_ = os.WriteFile(filepath.Join(cpusetDir, "cpuset.mems"), []byte("0"), 0644)
 
 		// Masukkan PID ke cgroup cpuset task
 		tasksPath := filepath.Join(cpusetDir, "tasks")
