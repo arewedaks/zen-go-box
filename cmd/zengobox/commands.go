@@ -11,6 +11,7 @@ import (
 	"github.com/arewedaks/zen-go-box/internal/network"
 	"github.com/arewedaks/zen-go-box/internal/updater"
 	"github.com/arewedaks/zen-go-box/internal/web"
+	"github.com/arewedaks/zen-go-box/internal/core"
 )
 
 func init() {
@@ -79,10 +80,19 @@ var restartCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("Restarting service...")
 		netfilter.CleanAllNetfilter()
-		_ = mgr.Stop()
-		if err := mgr.Start(); err != nil {
-			slog.Error("Failed to restart service", "error", err)
-			os.Exit(1)
+		var shouldStart = true
+		if cfg.Wifi.Enabled {
+			shouldStart = network.EvaluateWifiState(cfg)
+			if !shouldStart {
+				slog.Info("Smart Wi-Fi: Conditions not met at startup. Proxy will wait for network changes.")
+			}
+		}
+
+		// 1. Mulai Core jika diizinkan oleh Smart Wi-Fi
+		if shouldStart {
+			if err := mgr.Start(); err != nil {
+				slog.Error("Failed to start proxy core", "error", err)
+			}
 		}
 		mode, err := netfilter.GetMode(cfg)
 		if err == nil {
@@ -134,15 +144,25 @@ var daemonCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("Running daemon watch mode...")
 
-		// 1. Start proxy core service
-		_ = mgr.Start()
-		mode, err := netfilter.GetMode(cfg)
-		if err == nil {
-			_ = mode.Setup(cfg)
+		var shouldStart = true
+		if cfg.Wifi.Enabled {
+			shouldStart = network.EvaluateWifiState(cfg)
+			if !shouldStart {
+				slog.Info("Smart Wi-Fi: Conditions not met at startup. Proxy will wait for network changes.")
+			}
 		}
 
-		// 2. Start Network Watcher (dynamic anti-loopback local IPs refresh)
-		netWatcher, err := network.NewNetworkWatcher(cfg)
+		// 1. Start proxy core service if conditions met
+		if shouldStart {
+			_ = mgr.Start()
+			mode, err := netfilter.GetMode(cfg)
+			if err == nil {
+				_ = mode.Setup(cfg)
+			}
+		}
+
+		// 2. Start Network Watcher (dynamic anti-loopback local IPs refresh & Smart Wi-Fi)
+		netWatcher, err := network.NewNetworkWatcher(cfg, mgr)
 		if err == nil {
 			netWatcher.Start()
 			defer netWatcher.Stop()
@@ -154,6 +174,11 @@ var daemonCmd = &cobra.Command{
 			modWatcher.Start()
 			defer modWatcher.Stop()
 		}
+
+		// 4. Start Smart Scheduler (Cron for auto-updates)
+		scheduler := core.NewScheduler(cfg)
+		scheduler.Start()
+		defer scheduler.Stop()
 
 		// 4. Start Zashboard Web Server
 		web.StartServer(mgr)

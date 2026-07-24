@@ -96,6 +96,8 @@ subscription:
   singbox_url: ""
   # Set to true to fetch full configs instead of just proxy-providers
   renew: false
+  # Automatically inject rules.yaml into downloaded subscription configs
+  inject_rules: false
 
 geo:
   # Automatically update GeoIP/GeoSite databases

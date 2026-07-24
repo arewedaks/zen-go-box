@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/arewedaks/zen-go-box/internal/config"
 )
 
 // GetWiFiSSID mengambil SSID WiFi aktif dengan 3 metode fallback
@@ -81,4 +83,49 @@ func getSSIDViaDumpsys() (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// EvaluateWifiState returns true if the proxy should run based on the current Wi-Fi conditions.
+// It also logs the decision.
+func EvaluateWifiState(cfg *config.Config) bool {
+	if !cfg.Wifi.Enabled {
+		return true // Always run if Smart Wi-Fi is disabled
+	}
+
+	ssid, isConnected := GetWiFiSSID()
+
+	if !isConnected {
+		// Device is NOT connected to Wi-Fi
+		if cfg.Wifi.UseOnDisconnect {
+			return true
+		}
+		return false
+	}
+
+	// Device IS connected to Wi-Fi
+	if !cfg.Wifi.SSIDMatching {
+		return cfg.Wifi.UseOnWifi
+	}
+
+	// Match SSID
+	matched := false
+	for _, allowed := range cfg.Wifi.SSIDList {
+		if strings.TrimSpace(allowed) == ssid {
+			matched = true
+			break
+		}
+	}
+
+	if cfg.Wifi.SSIDMode == "whitelist" {
+		if matched {
+			return true
+		}
+		return false
+	} else {
+		// blacklist
+		if matched {
+			return false
+		}
+		return true
+	}
 }

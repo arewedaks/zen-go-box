@@ -58,6 +58,16 @@ func UpdateSubscription(cfg *config.Config) error {
 
 			destPath := filepath.Join(cfg.Paths.BoxDir, "clash", name)
 			_ = os.MkdirAll(filepath.Dir(destPath), 0755)
+
+			// Custom Rules Injector
+			if cfg.Subscription.InjectRules {
+				rulesPath := filepath.Join(cfg.Paths.BoxDir, "clash", "rules.yaml")
+				if rulesData, err := os.ReadFile(rulesPath); err == nil {
+					data = append(data, []byte("\n# --- Injected Custom Rules ---\n")...)
+					data = append(data, rulesData...)
+				}
+			}
+
 			if err := os.WriteFile(destPath, data, 0644); err != nil {
 				slog.Error("Failed to write clash config", "file", name, "error", err)
 			} else {

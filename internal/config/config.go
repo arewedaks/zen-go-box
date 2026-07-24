@@ -85,9 +85,10 @@ type PathsConfig struct {
 }
 
 type SubscriptionConfig struct {
-	ClashURLs  []string `yaml:"clash_urls"`
-	SingboxURL string   `yaml:"singbox_url"`
-	Renew      bool     `yaml:"renew"`
+	ClashURLs   []string `yaml:"clash_urls"`
+	SingboxURL  string   `yaml:"singbox_url"`
+	Renew       bool     `yaml:"renew"`
+	InjectRules bool     `yaml:"inject_rules"`
 }
 
 type GeoConfig struct {

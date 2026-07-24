@@ -7,16 +7,18 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/arewedaks/zen-go-box/internal/config"
+	"github.com/arewedaks/zen-go-box/internal/core"
 	"github.com/arewedaks/zen-go-box/internal/netfilter"
 )
 
 type NetworkWatcher struct {
 	watcher *fsnotify.Watcher
 	cfg     *config.Config
+	mgr     *core.Manager
 	done    chan bool
 }
 
-func NewNetworkWatcher(cfg *config.Config) (*NetworkWatcher, error) {
+func NewNetworkWatcher(cfg *config.Config, mgr *core.Manager) (*NetworkWatcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -25,6 +27,7 @@ func NewNetworkWatcher(cfg *config.Config) (*NetworkWatcher, error) {
 	return &NetworkWatcher{
 		watcher: watcher,
 		cfg:     cfg,
+		mgr:     mgr,
 		done:    make(chan bool),
 	}, nil
 }
@@ -80,6 +83,25 @@ func (nw *NetworkWatcher) Stop() {
 }
 
 func (nw *NetworkWatcher) refreshIPRules() {
+	if nw.cfg.Wifi.Enabled {
+		shouldRun := EvaluateWifiState(nw.cfg)
+		isRunning, _ := nw.mgr.Status()
+		if !shouldRun && isRunning {
+			slog.Info("Smart Wi-Fi: Conditions not met. Stopping Proxy...")
+			nw.mgr.Stop()
+			return
+		} else if shouldRun && !isRunning {
+			slog.Info("Smart Wi-Fi: Conditions met. Starting Proxy...")
+			nw.mgr.Start()
+		}
+	}
+
+	// Only refresh rules if the proxy is actually running
+	isRunning, _ := nw.mgr.Status()
+	if !isRunning {
+		return
+	}
+
 	slog.Info("Network state changed. Refreshing all netfilter rules...")
 
 	mode, err := netfilter.GetMode(nw.cfg)
