@@ -106,7 +106,7 @@ jobs:
           fi
           
           # Use printf to properly format the caption with line breaks for Telegram
-          CAPTION=$(printf "ZenGoBox %s Released\n\nChangelog:\n%s\n\nThe Magisk Module is ready for installation." "${VERSION}" "${CHANGELOG}")
+          CAPTION=$(printf "ZenGoBox %s Released\n\nChangelog:\n%s\n\nSource: https://github.com/${{ github.repository }}" "${VERSION}" "${CHANGELOG}")
           
           # Jika ada TG_TOPIC_ID, kirim ke topik. Jika tidak, kirim ke chat utama.
           if [ -n "$TG_TOPIC_ID" ]; then
