@@ -180,8 +180,8 @@
                             clearInterval(pollInterval);
                             setupLog.innerText = "Starting proxy daemon...";
                             
-                            // Start daemon
-                            await ksu.exec(`sh /data/adb/modules/zengobox/service.sh`);
+                            // Start daemon asynchronously without awaiting so it doesn't block IPC
+                            ksu.exec(`sh /data/adb/modules/zengobox/service.sh`);
                             
                             setupLog.innerText = "All done! Redirecting to Zashboard...";
                             setTimeout(() => {
