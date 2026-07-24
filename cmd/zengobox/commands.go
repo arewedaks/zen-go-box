@@ -148,7 +148,7 @@ var daemonCmd = &cobra.Command{
 		slog.Info("Running daemon watch mode...")
 
 		// Prevent multiple daemons by checking and writing a PID file
-		pidFile := filepath.Join(cfg.Paths.RunDir, "zengobox_daemon.pid")
+		pidFile := filepath.Join(cfg.Paths.RunDir, "zengobox.pid")
 		if oldPidBytes, err := os.ReadFile(pidFile); err == nil {
 			oldPid := strings.TrimSpace(string(oldPidBytes))
 			if oldPid != "" {

@@ -71,7 +71,7 @@ func (m *Manager) Start() error {
 	}
 
 	// 0. Pastikan tidak ada proses zombie dari proxy sebelumnya yang masih menyangkut
-	_ = m.Stop() // Coba hentikan via box.pid
+	_ = m.Stop() // Coba hentikan via core.pid
 	_ = exec.Command("killall", "-9", m.cfg.Core.BinName).Run() // Sapu bersih zombie process
 
 	// Dapatkan versi biner yang digunakan
@@ -186,7 +186,7 @@ func (m *Manager) Start() error {
 	m.running = true
 
 	// 5. Tulis file PID
-	pidPath := filepath.Join(m.cfg.Paths.RunDir, "box.pid")
+	pidPath := filepath.Join(m.cfg.Paths.RunDir, "core.pid")
 	if err := os.WriteFile(pidPath, []byte(strconv.Itoa(cmd.Process.Pid)), 0644); err != nil {
 		slog.Warn("Failed to write PID file", "error", err)
 	}
@@ -236,7 +236,7 @@ func (m *Manager) Stop() error {
 		m.scheduler = nil
 	}
 
-	pidPath := filepath.Join(m.cfg.Paths.RunDir, "box.pid")
+	pidPath := filepath.Join(m.cfg.Paths.RunDir, "core.pid")
 
 	// 1. Jika kita memiliki control instance (same process)
 	if m.running && m.cmd != nil {
@@ -299,7 +299,7 @@ func (m *Manager) Status() (bool, int) {
 	}
 
 	// 2. Fallback check dari file PID (berguna saat dipanggil dari CLI baru)
-	pidPath := filepath.Join(m.cfg.Paths.RunDir, "box.pid")
+	pidPath := filepath.Join(m.cfg.Paths.RunDir, "core.pid")
 	data, err := os.ReadFile(pidPath)
 	if err != nil {
 		return false, 0
