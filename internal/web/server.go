@@ -45,12 +45,12 @@ func StartServer(mgr *core.Manager) {
 	mux.HandleFunc("/api/setup_log", s.handleSetupLog)
 
 	s.srv = &http.Server{
-		Addr:    "127.0.0.1:9999",
+		Addr:    ":9999",
 		Handler: mux,
 	}
 
 	go func() {
-		slog.Info("Zashboard Web UI started on http://127.0.0.1:9999")
+		slog.Info("Zashboard Web UI started on http://0.0.0.0:9999 (Available on LAN)")
 		if err := s.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("Zashboard server failed", "error", err)
 		}

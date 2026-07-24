@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zashboard | ZenGoBox</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -13,56 +13,64 @@
         <div class="blob blob-2"></div>
     </div>
 
+    <!-- SETUP WIZARD -->
     <div class="container" id="setup-wizard" style="display: none;">
-        <header class="glass-panel" style="text-align: center;">
-            <div class="brand" style="justify-content: center; width: 100%;">
-                <div class="logo">⚡</div>
+        <header class="glass-panel text-center">
+            <div class="brand center-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                </div>
                 <div class="brand-text">
                     <h1>ZenGoBox Setup</h1>
-                    <p>First time configuration required</p>
+                    <p>Initial Configuration Wizard</p>
                 </div>
             </div>
         </header>
         
         <main>
-            <section class="glass-panel" style="text-align: center;">
-                <p style="margin-bottom: 20px; color: var(--text-muted);">Choose your preferred proxy core to extract default configurations.</p>
+            <section class="glass-panel text-center">
+                <p class="section-desc">Select a proxy core to install its default configuration templates.</p>
                 
                 <div class="form-group">
-                    <select id="setup-core" class="form-control" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 12px; font-size: 1rem; color: white;">
+                    <select id="setup-core" class="form-control select-large">
                         <option value="clash">Clash (Mihomo)</option>
                         <option value="sing-box">Sing-Box</option>
-                        <option value="xray">Xray</option>
-                        <option value="v2fly">V2fly</option>
-                        <option value="hysteria">Hysteria</option>
+                        <option value="xray">Xray Core</option>
+                        <option value="v2fly">V2fly (v2ray)</option>
+                        <option value="hysteria">Hysteria 2</option>
                         <option value="all">Install All Cores</option>
                     </select>
                 </div>
                 
-                <button id="btn-start-setup" class="btn btn-save" style="width: 100%; padding: 15px; font-size: 1.1rem; margin-top: 15px;">🚀 Start Installation</button>
+                <button id="btn-start-setup" class="btn btn-primary btn-large">Begin Installation</button>
             </section>
 
             <section class="logs-panel glass-panel" id="setup-logs-panel" style="display: none; margin-top: 20px;">
-                <div class="panel-header">
-                    <h2>Live Terminal Logs</h2>
+                <div class="panel-header-minimal">
+                    <h2>Installation Logs</h2>
                 </div>
-                <div class="terminal" id="setup-terminal" style="height: 200px;"></div>
-                <p id="setup-status-text" style="color: var(--accent-blue); text-align: center; margin-top: 10px;"></p>
+                <div class="terminal terminal-small" id="setup-terminal"></div>
+                <p id="setup-status-text" class="status-message"></p>
             </section>
         </main>
     </div>
 
+    <!-- MAIN DASHBOARD -->
     <div class="container" id="main-container" style="display: none;">
         <header class="glass-panel">
             <div class="brand">
-                <div class="logo">⚡</div>
+                <div class="logo">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                </div>
                 <div class="brand-text">
                     <h1>ZenGoBox</h1>
                     <p>Master Control Panel</p>
                 </div>
             </div>
             <div class="header-right">
-                <button class="btn-icon" id="btn-settings" title="Settings">⚙️</button>
+                <button class="btn-icon" id="btn-settings" title="Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
                 <div class="status-badge" id="status-badge">
                     <span class="dot"></span>
                     <span id="status-text">Connecting...</span>
@@ -72,7 +80,7 @@
 
         <main>
             <section class="control-panel glass-panel">
-                <div class="panel-header">
+                <div class="panel-header-minimal">
                     <h2>Core Switch</h2>
                 </div>
                 <div class="switch-container">
@@ -88,16 +96,20 @@
                 
                 <div class="quick-actions">
                     <button class="btn btn-clash" id="btn-clash" style="display: none;" onclick="window.open('http://127.0.0.1:9090/ui', '_blank')">
-                        🚀 Open Clash Dashboard
+                        Open WebUI
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px; vertical-align: -3px;"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                     </button>
                 </div>
             </section>
 
             <section class="logs-panel glass-panel">
-                <div class="panel-header">
+                <div class="panel-header-minimal">
                     <h2>Live Terminal Logs</h2>
                     <div class="log-actions">
-                        <button class="btn-icon active" id="btn-scroll" title="Auto-scroll to bottom">⏬ Auto-Scroll</button>
+                        <button class="btn-icon active" id="btn-scroll" title="Toggle Auto-scroll">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                            <span style="margin-left: 6px; font-size: 0.8rem; font-family: 'Outfit';">Auto-Scroll</span>
+                        </button>
                     </div>
                 </div>
                 <div class="terminal" id="terminal">
@@ -107,22 +119,24 @@
         </main>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- SETTINGS MODAL -->
     <div class="modal-overlay" id="settings-modal" style="display: none;">
         <div class="modal-content glass-panel">
             <div class="modal-header">
-                <h2>⚙️ ZenGoBox Settings</h2>
-                <button class="btn-close" id="btn-close-settings">✖</button>
+                <h2>Settings</h2>
+                <button class="btn-close" id="btn-close-settings">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label>Proxy Core</label>
                     <select id="setting-core" class="form-control">
-                        <option value="clash">Clash</option>
+                        <option value="clash">Clash (Mihomo)</option>
                         <option value="sing-box">Sing-Box</option>
-                        <option value="xray">Xray</option>
+                        <option value="xray">Xray Core</option>
                         <option value="v2fly">V2fly</option>
-                        <option value="hysteria">Hysteria</option>
+                        <option value="hysteria">Hysteria 2</option>
                     </select>
                 </div>
 
@@ -132,7 +146,7 @@
                         <input type="checkbox" id="setting-wifi">
                         <span class="slider"></span>
                     </label>
-                    <small>Auto-switch proxy based on Wi-Fi state</small>
+                    <small>Automatically manage proxy state based on Wi-Fi connection</small>
                 </div>
 
                 <div class="form-group toggle-group">
@@ -141,7 +155,7 @@
                         <input type="checkbox" id="setting-cron">
                         <span class="slider"></span>
                     </label>
-                    <small>Auto-download GeoIP/GeoSite & Subscriptions</small>
+                    <small>Periodically update GeoIP/GeoSite databases and subscriptions</small>
                 </div>
 
                 <div class="form-group toggle-group">
@@ -150,7 +164,7 @@
                         <input type="checkbox" id="setting-rules">
                         <span class="slider"></span>
                     </label>
-                    <small>Inject rules.yaml into subscriptions</small>
+                    <small>Merge custom rules.yaml into downloaded subscription profiles</small>
                 </div>
             </div>
             <div class="modal-footer">

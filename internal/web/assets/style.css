@@ -440,3 +440,16 @@ input:disabled + .slider {
     .container { padding: 1rem; }
     .brand-text h1 { font-size: 1.5rem; }
 }
+
+/* Minimalist Utilities */
+.text-center { text-align: center; }
+.center-content { justify-content: center; width: 100%; }
+.section-desc { margin-bottom: 24px; color: var(--text-muted); font-size: 1rem; font-weight: 300; }
+.select-large { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 14px; font-size: 1.05rem; color: white; width: 100%; border-radius: 12px; appearance: none; }
+.btn-large { width: 100%; padding: 16px; font-size: 1.1rem; margin-top: 20px; font-weight: 600; }
+.btn-primary { background: var(--accent-blue); color: white; border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+.btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6); }
+.panel-header-minimal { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; }
+.panel-header-minimal h2 { font-size: 1.1rem; font-weight: 500; color: #e2e8f0; letter-spacing: 0.5px; }
+.terminal-small { height: 180px; }
+.status-message { color: var(--accent-blue); text-align: center; margin-top: 15px; font-size: 0.9rem; font-weight: 500; }
