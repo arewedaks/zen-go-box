@@ -1,3 +1,7 @@
+## v1.0.20
+
+* Enhance ZenGoBox setup process with dashboard and mirror options, improve error handling, and update WebUI references
+
 ## v1.0.19
 
 * Fix: Update packaging messages and ZIP file naming for Universal Module
