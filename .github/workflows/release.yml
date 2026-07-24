@@ -49,11 +49,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send to Telegram Topic
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          TG_TOPIC_ID: ${{ secrets.TG_TOPIC_ID }}
         run: |
-          TG_BOT_TOKEN="${{ secrets.TG_BOT_TOKEN }}"
-          TG_CHAT_ID="${{ secrets.TG_CHAT_ID }}"
-          TG_TOPIC_ID="${{ secrets.TG_TOPIC_ID }}"
-          
           if [ -z "$TG_BOT_TOKEN" ] || [ -z "$TG_CHAT_ID" ]; then
             echo "Telegram credentials not provided. Skipping Telegram notification."
             exit 0
