@@ -1,0 +1,20 @@
+# Compiled outputs and binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.zip
+
+# Test binary
+*.test
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Temporary files
+*.log
+tmp/
+.tmp/
