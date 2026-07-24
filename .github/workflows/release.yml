@@ -1,13 +1,16 @@
-name: Release ZenGoBox
+name: Build and Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -16,36 +19,60 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-          cache: true
 
-      - name: Build Binaries and Magisk Module
+      - name: Build and Package Magisk Module
         run: |
           make build-magisk
-          # Extract version from tag (e.g., v1.0.2)
+          
+          # Extract the version from the tag (e.g., v1.0.7)
           VERSION=${GITHUB_REF#refs/tags/}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+          # Check if the generated ZIP exists
+          ZIP_FILE="bin/ZenGoBox-Magisk-${VERSION}.zip"
+          if [ -f "$ZIP_FILE" ]; then
+            echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
+          else
+            echo "Error: Generated ZIP file not found!"
+            exit 1
+          fi
 
-      - name: Upload to GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
+            ${{ env.ZIP_FILE }}
             bin/zengobox-arm64
             bin/zengobox-armv7
-            bin/ZenGoBox-Magisk-${{ env.VERSION }}.zip
-          draft: false
-          prerelease: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send to Telegram Group Topic
+      - name: Send to Telegram Topic
         run: |
-          # Fetch the ZIP file name dynamically based on the version
-          ZIP_FILE="bin/ZenGoBox-Magisk-${{ env.VERSION }}.zip"
+          TG_BOT_TOKEN="${{ secrets.TG_BOT_TOKEN }}"
+          TG_CHAT_ID="${{ secrets.TG_CHAT_ID }}"
+          TG_TOPIC_ID="${{ secrets.TG_TOPIC_ID }}"
           
-          # Use curl to send a document to a specific topic in a Telegram group
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument" \
-            -F "chat_id=${{ secrets.TG_CHAT_ID }}" \
-            -F "message_thread_id=${{ secrets.TG_TOPIC_ID }}" \
-            -F "document=@$ZIP_FILE" \
-            -F "caption=🚀 *ZenGoBox ${{ env.VERSION }} Released!*%0A%0A📦 [Download on GitHub](https://github.com/${{ github.repository }}/releases/tag/${{ env.VERSION }})%0A%0A✨ What's new? Check out the GitHub release notes!" \
-            -F "parse_mode=Markdown"
+          if [ -z "$TG_BOT_TOKEN" ] || [ -z "$TG_CHAT_ID" ]; then
+            echo "Telegram credentials not provided. Skipping Telegram notification."
+            exit 0
+          fi
+          
+          CAPTION="🚀 *ZenGoBox ${VERSION} Released!* %0A%0AAn Ultra-Fast & Portable Transparent Proxy Manager.%0A%0A📦 Magisk Module is ready for installation!"
+          
+          # Jika ada TG_TOPIC_ID, kirim ke topik. Jika tidak, kirim ke chat utama.
+          if [ -n "$TG_TOPIC_ID" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument" \
+              -F chat_id="${TG_CHAT_ID}" \
+              -F message_thread_id="${TG_TOPIC_ID}" \
+              -F document=@"${{ env.ZIP_FILE }}" \
+              -F caption="${CAPTION}" \
+              -F parse_mode="Markdown"
+          else
+            curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument" \
+              -F chat_id="${TG_CHAT_ID}" \
+              -F document=@"${{ env.ZIP_FILE }}" \
+              -F caption="${CAPTION}" \
+              -F parse_mode="Markdown"
+          fi
