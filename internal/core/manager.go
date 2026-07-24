@@ -33,6 +33,32 @@ func NewManager(cfg *config.Config) *Manager {
 	}
 }
 
+// Helper function untuk mengambil versi biner secara aman
+func getCoreVersion(binPath string, binName string) string {
+	var out []byte
+	switch binName {
+	case "clash", "mihomo":
+		out, _ = exec.Command(binPath, "-v").CombinedOutput()
+	case "sing-box", "v2fly", "hysteria":
+		out, _ = exec.Command(binPath, "version").CombinedOutput()
+	case "xray":
+		out, _ = exec.Command(binPath, "-version").CombinedOutput()
+	default:
+		out, _ = exec.Command(binPath, "-v").CombinedOutput()
+	}
+
+	lines := strings.Split(string(out), "\n")
+	if len(lines) > 0 && lines[0] != "" {
+		// Ambil baris pertama, potong jika terlalu panjang
+		ver := strings.TrimSpace(lines[0])
+		if len(ver) > 40 {
+			return ver[:40] + "..."
+		}
+		return ver
+	}
+	return "unknown"
+}
+
 // Start menjalankan proxy core yang dikonfigurasi
 func (m *Manager) Start() error {
 	if m.running {
@@ -43,9 +69,16 @@ func (m *Manager) Start() error {
 	_ = m.Stop() // Coba hentikan via box.pid
 	_ = exec.Command("killall", "-9", m.cfg.Core.BinName).Run() // Sapu bersih zombie process
 
+	// Dapatkan versi biner yang digunakan
+	binPath := filepath.Join(m.cfg.Paths.BinDir, m.cfg.Core.BinName)
+	if _, err := os.Stat(binPath); err != nil {
+		return fmt.Errorf("core binary %s not found in %s", m.cfg.Core.BinName, m.cfg.Paths.BinDir)
+	}
+	coreVersion := getCoreVersion(binPath, m.cfg.Core.BinName)
+
 	// Tampilkan informasi konfigurasi yang digunakan secara ringkas (1 baris ke samping)
 	slog.Info("Configuration Loaded",
-		"core", fmt.Sprintf("%s (%s)", m.cfg.Core.BinName, m.cfg.Core.ClashOption),
+		"core", fmt.Sprintf("%s (%s) | %s", m.cfg.Core.BinName, m.cfg.Core.ClashOption, coreVersion),
 		"net", fmt.Sprintf("%s (v6:%v)", m.cfg.Network.Mode, m.cfg.Network.IPv6),
 		"proxy", m.cfg.Proxy.Mode,
 		"port", m.cfg.Network.TProxyPort,
@@ -75,7 +108,6 @@ func (m *Manager) Start() error {
 	}
 
 	// 3. Bangun exec command
-	binPath := filepath.Join(m.cfg.Paths.BinDir, m.cfg.Core.BinName)
 	var args []string
 
 	switch m.cfg.Core.BinName {
