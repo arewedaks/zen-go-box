@@ -72,6 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/status');
             const data = await res.json();
             
+            if (data.needs_setup) {
+                document.getElementById('setup-wizard').style.display = 'block';
+                document.getElementById('main-container').style.display = 'none';
+                return;
+            } else {
+                document.getElementById('setup-wizard').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
+            }
+            
             // Update Status Badge
             statusBadge.className = `status-badge ${data.running ? 'active' : 'offline'}`;
             statusText.textContent = data.running ? 'Active' : 'Offline';
@@ -188,4 +197,59 @@ document.addEventListener('DOMContentLoaded', () => {
             settingsModal.style.display = 'none';
         }
     });
+
+    // Setup Wizard Logic
+    const btnStartSetup = document.getElementById('btn-start-setup');
+    if (btnStartSetup) {
+        btnStartSetup.addEventListener('click', async () => {
+            const core = document.getElementById('setup-core').value;
+            const btn = document.getElementById('btn-start-setup');
+            const logsPanel = document.getElementById('setup-logs-panel');
+            const setupTerminal = document.getElementById('setup-terminal');
+            const setupStatusText = document.getElementById('setup-status-text');
+
+            btn.disabled = true;
+            btn.innerHTML = 'Installing...';
+            logsPanel.style.display = 'block';
+            setupTerminal.innerText = "> Preparing environment...\n";
+
+            try {
+                await fetch('/api/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ core: core })
+                });
+
+                const pollInterval = setInterval(async () => {
+                    try {
+                        const res = await fetch('/api/setup_log');
+                        const text = await res.text();
+                        if (text && text.trim() !== "") {
+                            setupTerminal.innerText = text;
+                            setupTerminal.scrollTop = setupTerminal.scrollHeight;
+                        }
+                        
+                        if (text.includes("Setup complete!")) {
+                            clearInterval(pollInterval);
+                            setupStatusText.innerText = "Setup complete! Restarting daemon...";
+                            
+                            // Restart daemon so it loads the new config and drops Setup Mode
+                            await fetch('/api/restart', { method: 'POST' });
+                            
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 3000);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }, 1000);
+
+            } catch (e) {
+                alert('Setup failed: ' + e.message);
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Start Installation';
+            }
+        });
+    }
 });

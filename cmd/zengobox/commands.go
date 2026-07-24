@@ -161,14 +161,17 @@ var daemonCmd = &cobra.Command{
 		defer os.Remove(pidFile)
 
 		var shouldStart = true
-		if cfg.Wifi.Enabled {
+		if cfg.NeedsSetup {
+			slog.Info("No configuration found. Starting in Setup Wizard mode...")
+			shouldStart = false
+		} else if cfg.Wifi.Enabled {
 			shouldStart = network.EvaluateWifiState(cfg)
 			if !shouldStart {
 				slog.Info("Smart Wi-Fi: Conditions not met at startup. Proxy will wait for network changes.")
 			}
 		}
 
-		// 1. Start proxy core service if conditions met
+		// 1. Start proxy core service if conditions met (and not in setup mode)
 		if shouldStart {
 			_ = mgr.Start()
 			mode, err := netfilter.GetMode(cfg)
@@ -178,10 +181,12 @@ var daemonCmd = &cobra.Command{
 		}
 
 		// 2. Start Network Watcher (dynamic anti-loopback local IPs refresh & Smart Wi-Fi)
-		netWatcher, err := network.NewNetworkWatcher(cfg, mgr)
-		if err == nil {
-			netWatcher.Start()
-			defer netWatcher.Stop()
+		if !cfg.NeedsSetup {
+			netWatcher, err := network.NewNetworkWatcher(cfg, mgr)
+			if err == nil {
+				netWatcher.Start()
+				defer netWatcher.Stop()
+			}
 		}
 
 		// 3. Start Module Status Watcher (Magisk disable file trigger)
@@ -192,9 +197,11 @@ var daemonCmd = &cobra.Command{
 		}
 
 		// 4. Start Smart Scheduler (Cron for auto-updates)
-		scheduler := core.NewScheduler(cfg)
-		scheduler.Start()
-		defer scheduler.Stop()
+		if !cfg.NeedsSetup {
+			scheduler := core.NewScheduler(cfg)
+			scheduler.Start()
+			defer scheduler.Stop()
+		}
 
 		// 4. Start Zashboard Web Server
 		web.StartServer(mgr)

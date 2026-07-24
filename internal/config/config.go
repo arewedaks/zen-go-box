@@ -18,6 +18,7 @@ type Config struct {
 	Schedule     ScheduleConfig     `yaml:"schedule"`
 	Wifi         WifiConfig         `yaml:"wifi"`
 	Log          LogConfig          `yaml:"log"`
+	NeedsSetup   bool               `yaml:"-"`
 }
 
 type CoreConfig struct {

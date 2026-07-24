@@ -13,7 +13,46 @@
         <div class="blob blob-2"></div>
     </div>
 
-    <div class="container">
+    <div class="container" id="setup-wizard" style="display: none;">
+        <header class="glass-panel" style="text-align: center;">
+            <div class="brand" style="justify-content: center; width: 100%;">
+                <div class="logo">⚡</div>
+                <div class="brand-text">
+                    <h1>ZenGoBox Setup</h1>
+                    <p>First time configuration required</p>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <section class="glass-panel" style="text-align: center;">
+                <p style="margin-bottom: 20px; color: var(--text-muted);">Choose your preferred proxy core to extract default configurations.</p>
+                
+                <div class="form-group">
+                    <select id="setup-core" class="form-control" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 12px; font-size: 1rem; color: white;">
+                        <option value="clash">Clash (Mihomo)</option>
+                        <option value="sing-box">Sing-Box</option>
+                        <option value="xray">Xray</option>
+                        <option value="v2fly">V2fly</option>
+                        <option value="hysteria">Hysteria</option>
+                        <option value="all">Install All Cores</option>
+                    </select>
+                </div>
+                
+                <button id="btn-start-setup" class="btn btn-save" style="width: 100%; padding: 15px; font-size: 1.1rem; margin-top: 15px;">🚀 Start Installation</button>
+            </section>
+
+            <section class="logs-panel glass-panel" id="setup-logs-panel" style="display: none; margin-top: 20px;">
+                <div class="panel-header">
+                    <h2>Live Terminal Logs</h2>
+                </div>
+                <div class="terminal" id="setup-terminal" style="height: 200px;"></div>
+                <p id="setup-status-text" style="color: var(--accent-blue); text-align: center; margin-top: 10px;"></p>
+            </section>
+        </main>
+    </div>
+
+    <div class="container" id="main-container" style="display: none;">
         <header class="glass-panel">
             <div class="brand">
                 <div class="logo">⚡</div>

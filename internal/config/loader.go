@@ -11,13 +11,18 @@ import (
 
 // Load loading Config dari file YAML
 func Load(path string) (*Config, error) {
+	cfg := DefaultConfig()
+
 	file, err := os.Open(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			cfg.NeedsSetup = true
+			return cfg, nil
+		}
 		return nil, fmt.Errorf("failed to open config: %w", err)
 	}
 	defer file.Close()
 
-	cfg := DefaultConfig()
 	decoder := yaml.NewDecoder(file)
 	if err := decoder.Decode(cfg); err != nil {
 		return nil, fmt.Errorf("failed to decode config: %w", err)

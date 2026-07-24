@@ -7,8 +7,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/arewedaks/zen-go-box/internal/core"
 )
@@ -37,7 +39,10 @@ func StartServer(mgr *core.Manager) {
 	mux.HandleFunc("/api/logs", s.handleLogs)
 	mux.HandleFunc("/api/start", s.handleStart)
 	mux.HandleFunc("/api/stop", s.handleStop)
+	mux.HandleFunc("/api/restart", s.handleRestart)
 	mux.HandleFunc("/api/config", s.handleConfig)
+	mux.HandleFunc("/api/setup", s.handleSetup)
+	mux.HandleFunc("/api/setup_log", s.handleSetupLog)
 
 	s.srv = &http.Server{
 		Addr:    "127.0.0.1:9999",
@@ -60,6 +65,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		"running": running,
 		"core":    s.mgr.Config().Core.BinName,
 		"pid":     pid,
+		"needs_setup": s.mgr.Config().NeedsSetup,
 	})
 }
 
@@ -93,6 +99,23 @@ func (s *Server) handleStop(w http.ResponseWriter, r *http.Request) {
 	
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status": "stopped"}`))
+}
+
+func (s *Server) handleRestart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	go func() {
+		_ = s.mgr.Stop()
+		exec.Command("sh", "/data/adb/modules/zengobox/service.sh").Start()
+		time.Sleep(1 * time.Second)
+		os.Exit(0)
+	}()
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status": "restarting"}`))
 }
 
 func (s *Server) handleLogs(w http.ResponseWriter, r *http.Request) {
@@ -150,4 +173,52 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+}
+
+func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Core string `json:"core"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Tulis progress log ke temp file
+	logFile := "/data/local/tmp/zengobox_setup.log"
+	_ = os.Remove(logFile)
+	
+	// Eksekusi setup core di background
+	cmd := exec.Command("/data/adb/zengobox/bin/zengobox", "setup", req.Core)
+	outFile, _ := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY, 0644)
+	cmd.Stdout = outFile
+	cmd.Stderr = outFile
+	
+	err := cmd.Start()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) handleSetupLog(w http.ResponseWriter, r *http.Request) {
+	logFile := "/data/local/tmp/zengobox_setup.log"
+	data, err := os.ReadFile(logFile)
+	if err != nil {
+		w.Write([]byte("Waiting for logs..."))
+		return
+	}
+	
+	// Just return the last 3000 bytes so it doesn't get too large
+	if len(data) > 3000 {
+		data = data[len(data)-3000:]
+	}
+	w.Write(data)
 }
