@@ -53,9 +53,16 @@ jobs:
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           if [ -n "$PREV_TAG" ]; then
             CHANGES=$(git log ${PREV_TAG}..HEAD --pretty=format:"* %s")
+            TG_CHANGES=$(git log ${PREV_TAG}..HEAD --pretty=format:"• %s" | head -n 5)
           else
             CHANGES=$(git log -1 --pretty=format:"* %s")
+            TG_CHANGES=$(git log -1 --pretty=format:"• %s")
           fi
+          
+          # Save Telegram changelog to env
+          echo "TG_CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$TG_CHANGES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           
           # Prepend changes to CHANGELOG.md
           echo -e "## ${VERSION}\n\n${CHANGES}\n\n$(cat CHANGELOG.md)" > CHANGELOG.md
@@ -97,16 +104,8 @@ jobs:
             exit 0
           fi
           
-          # Generate simple changelog (last 5 commits)
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -n "$PREV_TAG" ]; then
-            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"• %s" | head -n 5)
-          else
-            CHANGELOG=$(git log -1 --pretty=format:"• %s")
-          fi
-          
           # Use printf to properly format the caption with line breaks for Telegram
-          CAPTION=$(printf "ZenGoBox %s Released\n\nChangelog:\n%s\n\nSource: https://github.com/${{ github.repository }}" "${VERSION}" "${CHANGELOG}")
+          CAPTION=$(printf "ZenGoBox %s Released\n\nChangelog:\n%s\n\nSource: https://github.com/${{ github.repository }}" "${VERSION}" "${TG_CHANGELOG}")
           
           # Jika ada TG_TOPIC_ID, kirim ke topik. Jika tidak, kirim ke chat utama.
           if [ -n "$TG_TOPIC_ID" ]; then
