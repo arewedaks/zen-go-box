@@ -34,7 +34,7 @@ jobs:
           make build-magisk
           
           # Check if the generated ZIP exists
-          ZIP_FILE="bin/ZenGoBox-Magisk-${VERSION}.zip"
+          ZIP_FILE="bin/ZenGoBox-module-${VERSION}.zip"
           if [ -f "$ZIP_FILE" ]; then
             echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
           else
@@ -66,7 +66,7 @@ jobs:
           {
             "version": "${VERSION}",
             "versionCode": ${VERSION_CODE},
-            "zipUrl": "https://github.com/${{ github.repository }}/releases/download/${VERSION}/ZenGoBox-Magisk-${VERSION}.zip",
+            "zipUrl": "https://github.com/${{ github.repository }}/releases/download/${VERSION}/ZenGoBox-module-${VERSION}.zip",
             "changelog": "https://raw.githubusercontent.com/${{ github.repository }}/master/CHANGELOG.md"
           }
           EOF
