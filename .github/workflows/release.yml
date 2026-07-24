@@ -22,11 +22,16 @@ jobs:
 
       - name: Build and Package Magisk Module
         run: |
-          make build-magisk
-          
           # Extract the version from the tag (e.g., v1.0.7)
           VERSION=${GITHUB_REF#refs/tags/}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          
+          # Auto-update module.prop version and versionCode based on the tag
+          VERSION_NUM=$(echo $VERSION | tr -d 'v.')
+          sed -i "s/^version=.*/version=${VERSION}/" shell/module.prop
+          sed -i "s/^versionCode=.*/versionCode=100${VERSION_NUM}/" shell/module.prop
+          
+          make build-magisk
           
           # Check if the generated ZIP exists
           ZIP_FILE="bin/ZenGoBox-Magisk-${VERSION}.zip"
@@ -66,8 +71,8 @@ jobs:
           }
           EOF
           
-          git add update.json CHANGELOG.md
-          git commit -m "chore: Auto-update OTA JSON and Changelog for ${VERSION} [skip ci]" || true
+          git add update.json CHANGELOG.md shell/module.prop
+          git commit -m "chore: Auto-update OTA JSON, Changelog, and module.prop for ${VERSION} [skip ci]" || true
           git push origin master
 
       - name: Create GitHub Release
