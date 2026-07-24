@@ -3,6 +3,7 @@ package network
 import (
 	"log/slog"
 	"os"
+	"os/exec"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -90,6 +91,17 @@ func (nw *NetworkWatcher) refreshIPRules() {
 
 	ipt4 := netfilter.NewIPT("iptables")
 	ipt6 := netfilter.NewIPT("ip6tables")
+
+	// 0. Pulihkan (Re-apply) policy routing rules!
+	// Saat mode pesawat (airplane mode) di-toggle, daemon network Android (netd) sering kali me-reset 'ip rule'.
+	// Oleh karena itu, kita harus memasang ulang rule routing TPROXY ini.
+	_ = exec.Command("ip", "rule", "add", "fwmark", netfilter.FWMark, "table", netfilter.TableID, "pref", netfilter.RulePref).Run()
+	_ = exec.Command("ip", "route", "replace", "local", "default", "dev", "lo", "table", netfilter.TableID).Run()
+	
+	if nw.cfg.Network.IPv6 {
+		_ = exec.Command("ip", "-6", "rule", "add", "fwmark", netfilter.FWMark, "table", netfilter.TableID, "pref", netfilter.RulePref).Run()
+		_ = exec.Command("ip", "-6", "route", "replace", "local", "default", "dev", "lo", "table", netfilter.TableID).Run()
+	}
 
 	// 1. Bersihkan rules chain LOCAL_IP di mangle table
 	// Mangle table
