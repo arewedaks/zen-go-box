@@ -43,6 +43,8 @@ func (c *ClashInjector) Prepare(cfg *config.Config) error {
 	// Tentukan external-controller agar bisa diakses dari jaringan lokal (bind all interfaces)
 	rawMap["external-controller"] = ":9090"
 	rawMap["external-ui"] = filepath.Join(cfg.Paths.BoxDir, "clash", "dashboard")
+	rawMap["allow-lan"] = true
+	rawMap["bind-address"] = "*"
 
 	// Paksa injeksi header CORS untuk akses dashboard dari browser eksternal (PC Desktop)
 	headersMap := map[string]interface{}{

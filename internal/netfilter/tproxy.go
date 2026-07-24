@@ -85,6 +85,14 @@ func (t *TProxyMode) Setup(cfg *config.Config) error {
 			_ = ipt.Exec("-t", "mangle", "-A", "ZENNODE_LOCAL", "-p", "udp", "--dport", "53", "-j", "RETURN")
 		}
 
+		// TPROXY DIVERT rule untuk established sockets
+		ipt.ExecIgnoreError("-t", "mangle", "-N", "ZENNODE_DIVERT")
+		ipt.ExecIgnoreError("-t", "mangle", "-F", "ZENNODE_DIVERT")
+		_ = ipt.Exec("-t", "mangle", "-A", "ZENNODE_DIVERT", "-j", "MARK", "--set-mark", FWMark)
+		_ = ipt.Exec("-t", "mangle", "-A", "ZENNODE_DIVERT", "-j", "ACCEPT")
+
+		_ = ipt.Exec("-t", "mangle", "-I", "ZENNODE_EXTERNAL", "1", "-p", "tcp", "-m", "socket", "-j", "ZENNODE_DIVERT")
+
 		// TPROXY target rules untuk TCP & UDP
 		portStr := strconv.Itoa(cfg.Network.TProxyPort)
 		_ = ipt.Exec("-t", "mangle", "-A", "ZENNODE_EXTERNAL", "-p", "tcp", "-i", "lo", "-j", "TPROXY", "--on-port", portStr, "--tproxy-mark", FWMark)
