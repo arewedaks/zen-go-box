@@ -9,9 +9,8 @@ import (
 	"github.com/arewedaks/zen-go-box/internal/config"
 	"github.com/arewedaks/zen-go-box/internal/core"
 	"github.com/arewedaks/zen-go-box/internal/netfilter"
-	"net"
+	"net/http"
 	"os/exec"
-	"strings"
 )
 
 type NetworkWatcher struct {
@@ -19,7 +18,6 @@ type NetworkWatcher struct {
 	cfg     *config.Config
 	mgr     *core.Manager
 	done    chan bool
-	lastIPs string
 }
 
 func NewNetworkWatcher(cfg *config.Config, mgr *core.Manager) (*NetworkWatcher, error) {
@@ -65,14 +63,8 @@ func (nw *NetworkWatcher) Start() {
 						timer.Stop()
 					}
 					timer = time.AfterFunc(debounceDuration, func() {
-						currentIPs := nw.getCurrentIPs()
-						if currentIPs != nw.lastIPs {
-							slog.Debug("IP addresses changed, triggering network rules refresh.")
-							nw.lastIPs = currentIPs
-							nw.refreshIPRules()
-						} else {
-							slog.Debug("Network event detected, but IP addresses remain unchanged. Bypassing iptables refresh.")
-						}
+						slog.Info("Network event detected. Triggering rules refresh...")
+						nw.refreshIPRules()
 					})
 				}
 			case err, ok := <-nw.watcher.Errors:
@@ -91,19 +83,6 @@ func (nw *NetworkWatcher) Stop() {
 	nw.done <- true
 	nw.watcher.Close()
 	slog.Info("Network interface watcher stopped.")
-}
-
-func (nw *NetworkWatcher) getCurrentIPs() string {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return ""
-	}
-	var sb strings.Builder
-	for _, addr := range addrs {
-		sb.WriteString(addr.String())
-		sb.WriteString(",")
-	}
-	return sb.String()
 }
 
 func (nw *NetworkWatcher) refreshIPRules() {
@@ -141,6 +120,18 @@ func (nw *NetworkWatcher) refreshIPRules() {
 	}
 
 	// 1. Connection Reset (Robust Connection Tracking)
+	nw.flushConnections()
+
+	// 2. Secondary Flush (Tertunda)
+	// Untuk mengatasi lambatnya negosiasi Data Seluler (LTE/5G) yang kadang memakan waktu 5-8 detik
+	// saat di-ON-kan, kita jadwalkan tembakan flush kedua agar Mihomo tidak bengong setelah sinyal benar-benar masuk.
+	time.AfterFunc(6*time.Second, func() {
+		slog.Info("Executing secondary delayed flush for slow cellular negotiations...")
+		nw.flushConnections()
+	})
+}
+
+func (nw *NetworkWatcher) flushConnections() {
 	// Membunuh stale sockets agar aplikasi langsung reconnect tanpa menunggu timeout
 	slog.Info("Flushing stale connections to force immediate reconnect...")
 	
@@ -150,4 +141,15 @@ func (nw *NetworkWatcher) refreshIPRules() {
 	// Jika tersedia di sistem, gunakan ss -K untuk mengirim SOCK_DESTROY (TCP RST)
 	// ss -K -t state established
 	_ = exec.Command("ss", "-K", "-t", "state", "established").Run()
+
+	// Mihomo/Clash REST API Flush
+	slog.Info("Sending REST API signal to flush proxy core connections...")
+	req, err := http.NewRequest("DELETE", "http://127.0.0.1:9090/connections", nil)
+	if err == nil {
+		if nw.cfg.Core.APISecret != "" {
+			req.Header.Set("Authorization", "Bearer "+nw.cfg.Core.APISecret)
+		}
+		client := &http.Client{Timeout: 2 * time.Second}
+		_, _ = client.Do(req)
+	}
 }
