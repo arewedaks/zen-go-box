@@ -1,3 +1,7 @@
+## v1.0.19
+
+* Fix: Update packaging messages and ZIP file naming for Universal Module
+
 ## v1.0.18
 
 * Docs: Add Non-Destructive Config Management to README features
