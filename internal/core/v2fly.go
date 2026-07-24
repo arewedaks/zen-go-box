@@ -11,7 +11,11 @@ import (
 type V2flyInjector struct{}
 
 func (v *V2flyInjector) Prepare(cfg *config.Config) error {
-	srcPath := filepath.Join(cfg.Paths.BoxDir, "v2fly", "config.json")
+	confName := cfg.Core.ConfigNames["v2fly"]
+	if confName == "" {
+		confName = "config.json"
+	}
+	srcPath := filepath.Join(cfg.Paths.BoxDir, "v2fly", confName)
 	destPath := filepath.Join(cfg.Paths.BoxDir, "v2fly", "run.json")
 
 	data, err := os.ReadFile(srcPath)

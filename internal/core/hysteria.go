@@ -13,7 +13,11 @@ import (
 type HysteriaInjector struct{}
 
 func (h *HysteriaInjector) Prepare(cfg *config.Config) error {
-	srcPath := filepath.Join(cfg.Paths.BoxDir, "hysteria", "config.yaml")
+	confName := cfg.Core.ConfigNames["hysteria"]
+	if confName == "" {
+		confName = "config.yaml"
+	}
+	srcPath := filepath.Join(cfg.Paths.BoxDir, "hysteria", confName)
 	destPath := filepath.Join(cfg.Paths.BoxDir, "hysteria", "run.yaml")
 
 	data, err := os.ReadFile(srcPath)

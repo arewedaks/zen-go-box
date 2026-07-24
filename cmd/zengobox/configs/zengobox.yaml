@@ -1,5 +1,6 @@
 # zengobox.yaml
 core:
+  # The proxy core binary to use: "clash", "sing-box", "xray", "v2fly", "hysteria"
   bin_name: "clash"
   bin_list:
     - sing-box
@@ -7,7 +8,15 @@ core:
     - xray
     - v2fly
     - hysteria
+  # Optional: For clash, you can specify the variant (e.g. "mihomo")
   clash_option: "mihomo"
+  # Custom configuration file names for each core
+  config_names:
+    clash: "config.yaml"
+    sing-box: "config.json"
+    xray: "config.json"
+    v2fly: "config.json"
+    hysteria: "config.yaml"
 
 network:
   mode: "tproxy"

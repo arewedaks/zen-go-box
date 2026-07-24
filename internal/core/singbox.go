@@ -12,7 +12,11 @@ import (
 type SingboxInjector struct{}
 
 func (s *SingboxInjector) Prepare(cfg *config.Config) error {
-	srcPath := filepath.Join(cfg.Paths.BoxDir, "sing-box", "config.json")
+	confName := cfg.Core.ConfigNames["sing-box"]
+	if confName == "" {
+		confName = "config.json"
+	}
+	srcPath := filepath.Join(cfg.Paths.BoxDir, "sing-box", confName)
 	destPath := filepath.Join(cfg.Paths.BoxDir, "sing-box", "run.json")
 
 	// 1. Baca config asli

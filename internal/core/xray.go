@@ -11,7 +11,11 @@ import (
 type XrayInjector struct{}
 
 func (x *XrayInjector) Prepare(cfg *config.Config) error {
-	srcPath := filepath.Join(cfg.Paths.BoxDir, "xray", "config.json")
+	confName := cfg.Core.ConfigNames["xray"]
+	if confName == "" {
+		confName = "config.json"
+	}
+	srcPath := filepath.Join(cfg.Paths.BoxDir, "xray", confName)
 	destPath := filepath.Join(cfg.Paths.BoxDir, "xray", "run.json")
 
 	data, err := os.ReadFile(srcPath)

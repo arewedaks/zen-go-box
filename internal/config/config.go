@@ -21,9 +21,10 @@ type Config struct {
 }
 
 type CoreConfig struct {
-	BinName     string   `yaml:"bin_name"`
-	BinList     []string `yaml:"bin_list"`
-	ClashOption string   `yaml:"clash_option"`
+	BinName     string            `yaml:"bin_name"`
+	BinList     []string          `yaml:"bin_list"`
+	ClashOption string            `yaml:"clash_option"`
+	ConfigNames map[string]string `yaml:"config_names"`
 }
 
 type NetworkConfig struct {
@@ -133,6 +134,13 @@ func DefaultConfig() *Config {
 			BinName:     "clash",
 			BinList:     []string{"sing-box", "clash", "xray", "v2fly", "hysteria"},
 			ClashOption: "mihomo",
+			ConfigNames: map[string]string{
+				"clash":    "config.yaml",
+				"sing-box": "config.json",
+				"xray":     "config.json",
+				"v2fly":    "config.json",
+				"hysteria": "config.yaml",
+			},
 		},
 		Network: NetworkConfig{
 			Mode:            "tproxy",

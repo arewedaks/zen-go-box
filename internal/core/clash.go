@@ -12,7 +12,11 @@ import (
 type ClashInjector struct{}
 
 func (c *ClashInjector) Prepare(cfg *config.Config) error {
-	srcPath := filepath.Join(cfg.Paths.BoxDir, "clash", "config.yaml")
+	confName := cfg.Core.ConfigNames["clash"]
+	if confName == "" {
+		confName = "config.yaml"
+	}
+	srcPath := filepath.Join(cfg.Paths.BoxDir, "clash", confName)
 	destPath := filepath.Join(cfg.Paths.BoxDir, "clash", "run.yaml")
 
 	// 1. Baca config asli
