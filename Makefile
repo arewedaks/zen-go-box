@@ -36,6 +36,7 @@ build-magisk: build-arm64 build-armv7
 	@cp shell/action.sh bin/magisk-temp/
 	@cp shell/uninstall.sh bin/magisk-temp/
 	@cp shell/service.sh bin/magisk-temp/
+	@cp -r shell/webroot bin/magisk-temp/
 	@cd bin/magisk-temp && zip -r9 ../ZenGoBox-Magisk-v1.0.0.zip .
 	@rm -rf bin/magisk-temp
 	@echo "Magisk Module ZIP created at bin/ZenGoBox-Magisk-v1.0.0.zip"

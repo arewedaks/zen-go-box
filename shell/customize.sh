@@ -29,6 +29,7 @@ unzip -o "$ZIPFILE" 'uninstall.sh' -d $MODPATH >&2
 unzip -o "$ZIPFILE" 'action.sh' -d $MODPATH >&2
 unzip -o "$ZIPFILE" 'service.sh' -d $MODPATH >&2
 unzip -o "$ZIPFILE" 'module.prop' -d $MODPATH >&2
+unzip -o "$ZIPFILE" 'webroot/*' -d $MODPATH >&2
 
 set_perm_recursive $MODPATH 0 0 0755 0755
 
