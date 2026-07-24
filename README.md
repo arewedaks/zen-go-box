@@ -36,40 +36,31 @@
 
 ## Getting Started
 
-### 1. Installation
+### Method 1: Magisk / KernelSU Module (Recommended)
+The easiest way to use ZenGoBox is by installing it as a systemless module:
+1. Download the latest `ZenGoBox-module-vX.X.X.zip` from the [Releases](https://github.com/arewedaks/zen-go-box/releases) page.
+2. Flash the ZIP file via **Magisk Manager**, **KernelSU**, or **APatch**.
+3. Reboot your device.
+4. Open the Magisk / KernelSU app, go to the Modules tab, and tap the **Action/WebUI** button on the ZenGoBox module.
+5. The **Zashboard (WebUI)** will open automatically at `http://127.0.0.1:9999`. From there, you can install proxy cores, manage configurations, and start/stop the service seamlessly!
+
+### Method 2: Manual Portable Setup (For Advanced Users)
 Because ZenGoBox is **100% portable**, you can place the binary in *any* directory. It will automatically detect its location and build the proxy environment right there!
 
-For example, let's set it up in a custom folder:
 ```bash
-# Create a folder and push the binary
+# 1. Create a folder and push the binary
 mkdir -p /data/local/tmp/myproxy
 cp zengobox /data/local/tmp/myproxy/
 su -c "chmod 755 /data/local/tmp/myproxy/zengobox"
-```
-*(If you are building a Magisk Module, placing it in `/data/adb/zengobox/bin/zengobox` is recommended, and the system will intelligently use `/data/adb/zengobox` as the root).*
 
-### 2. Initialization & Setup
-Run the setup command from your terminal (e.g., Termux) using root privileges. It will extract templates, download Geo databases, fetch the proxy kernel, and install the Web Dashboard in one go!
-```bash
+# 2. Run the setup command to extract templates & download dependencies
 # Setup for Clash (Default)
-su -c "/data/adb/zengobox/bin/zengobox setup clash"
-
-# Setup for Sing-box
-su -c "/data/adb/zengobox/bin/zengobox setup sing-box"
-
-# Setup for Xray
-su -c "/data/adb/zengobox/bin/zengobox setup xray"
-
-# Setup for v2fly
-su -c "/data/adb/zengobox/bin/zengobox setup v2fly"
-
-# Setup for Hysteria
-su -c "/data/adb/zengobox/bin/zengobox setup hysteria"
+su -c "/data/local/tmp/myproxy/zengobox setup clash"
 
 # Or setup ALL cores simultaneously
-su -c "/data/adb/zengobox/bin/zengobox setup all"
+su -c "/data/local/tmp/myproxy/zengobox setup all"
 ```
-*Note: You can edit the main configuration at `zengobox.yaml` in your folder after setup.*
+*Note: Once setup is complete, you can edit the main configuration at `zengobox.yaml` inside your folder or access the WebUI at `http://127.0.0.1:9999`.*
 
 ## CLI Commands
 
