@@ -1,16 +1,23 @@
-# zengobox.yaml
+# ==============================================================================
+# ZenGoBox Master Configuration File
+# ==============================================================================
+# This file controls the behavior of the ZenGoBox daemon and its proxy cores.
+# Edit carefully. Changes will take effect upon the next daemon restart.
+
 core:
   # The proxy core binary to use: "clash", "sing-box", "xray", "v2fly", "hysteria"
   bin_name: "clash"
+  # Allowed binaries to detect
   bin_list:
     - sing-box
     - clash
     - xray
     - v2fly
     - hysteria
-  # Optional: For clash, you can specify the variant (e.g. "mihomo")
+  # Optional: For clash, you can specify the variant (e.g., "mihomo" or "premium")
   clash_option: "mihomo"
-  # Custom configuration file names for each core
+  # Custom configuration file names for each core.
+  # Change these if you use custom naming conventions (e.g. "akun-premium.yaml")
   config_names:
     clash: "config.yaml"
     sing-box: "config.json"
@@ -19,17 +26,26 @@ core:
     hysteria: "config.yaml"
 
 network:
+  # Network routing mode: "tproxy", "redirect", "mixed", "enhance", or "tun"
   mode: "tproxy"
+  # Default TProxy port
   tproxy_port: 9898
+  # Default Redirect port
   redir_port: 9797
+  # Enable IPv6 routing support (true/false)
   ipv6: false
+  # Block QUIC traffic to force TCP fallback (often helps bypass UDP throttling)
   quic_block: false
 
 proxy:
+  # Access mode: "blacklist" (block listed packages) or "whitelist" (allow only listed packages)
   mode: "blacklist"
+  # Android package names to apply the mode to (e.g., "com.termux", "com.whatsapp")
   packages: []
+  # List of GIDs (Group IDs) to include in routing
   gids: []
   ap_list:
+    # Allowed network interfaces for routing
     allow:
       - "ap+"
       - "wlan+"
@@ -37,21 +53,29 @@ proxy:
       - "swlan+"
       - "ncm+"
       - "eth+"
+    # Ignored network interfaces
     ignore: []
 
 process:
+  # The user/group under which the proxy core runs
   user_group: "root:net_admin"
+  # Maximum restart attempts if the core crashes
   max_restarts: 5
+  # Time window for restart counting
   restart_window: "5m"
+  # Delay before restarting the core
   restart_backoff: "3s"
 
 cgroup:
   memcg:
+    # Enable memory limit for the proxy core to prevent out-of-memory errors
     enabled: false
     limit: "100M"
   cpuset:
+    # Enable CPU core affinity
     enabled: false
   blkio:
+    # Enable Block I/O rate limiting
     enabled: false
 
 # ---------------------------------------------------
@@ -66,28 +90,45 @@ cgroup:
 #   log_dir: "/path/to/custom/zengobox/run"
 
 subscription:
+  # List of subscription URLs for Clash configs
   clash_urls: []
+  # Subscription URL for Sing-Box
   singbox_url: ""
+  # Set to true to fetch full configs instead of just proxy-providers
   renew: false
 
 geo:
+  # Automatically update GeoIP/GeoSite databases
   auto_update: false
 
 schedule:
+  # Enable background cron scheduler
   enabled: false
+  # Standard cron expression (default: 0, 6, 12, 18 hours everyday)
   cron: "0 0,6,12,18 * * *"
+  # Run geo update on schedule
   update_geo: false
+  # Run subscription update on schedule
   update_subscription: false
 
 wifi:
+  # Enable Smart Wi-Fi auto-toggling
   enabled: false
+  # Run proxy when connected to Wi-Fi
   use_on_wifi: false
+  # Run proxy when Wi-Fi is disconnected (e.g., using Cellular Data)
   use_on_disconnect: true
+  # Enable SSID matching logic
   ssid_matching: false
+  # Matching mode: "blacklist" or "whitelist"
   ssid_mode: "blacklist"
+  # List of Wi-Fi SSIDs to match
   ssid_list: []
 
 log:
+  # Log verbosity level: "debug", "info", "warn", "error"
   level: "info"
+  # Maximum size of runs.log before it is rotated
   max_size: "1M"
+  # Show toast notifications when actions occur
   toast: true
