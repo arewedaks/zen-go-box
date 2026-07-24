@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zashboard | ZenGoBox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <header class="glass-panel">
+            <div class="brand">
+                <div class="logo">⚡</div>
+                <div class="brand-text">
+                    <h1>ZenGoBox</h1>
+                    <p>Master Control Panel</p>
+                </div>
+            </div>
+            <div class="status-badge" id="status-badge">
+                <span class="dot"></span>
+                <span id="status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <main>
+            <section class="control-panel glass-panel">
+                <div class="panel-header">
+                    <h2>Core Switch</h2>
+                </div>
+                <div class="switch-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="power-switch" disabled>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="switch-info">
+                        <h3 id="core-name">Unknown Core</h3>
+                        <p id="core-pid">PID: ---</p>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="btn btn-clash" id="btn-clash" style="display: none;" onclick="window.open('http://127.0.0.1:9090/ui', '_blank')">
+                        🚀 Open Clash Dashboard
+                    </button>
+                </div>
+            </section>
+
+            <section class="logs-panel glass-panel">
+                <div class="panel-header">
+                    <h2>Live Terminal Logs</h2>
+                    <div class="log-actions">
+                        <button class="btn-icon active" id="btn-scroll" title="Auto-scroll to bottom">⏬ Auto-Scroll</button>
+                    </div>
+                </div>
+                <div class="terminal" id="terminal">
+                    <!-- Logs will be injected here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

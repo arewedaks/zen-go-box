@@ -59,6 +59,11 @@ func getCoreVersion(binPath string, binName string) string {
 	return "unknown"
 }
 
+// Config returns the configuration associated with the manager
+func (m *Manager) Config() *config.Config {
+	return m.cfg
+}
+
 // Start menjalankan proxy core yang dikonfigurasi
 func (m *Manager) Start() error {
 	if m.running {

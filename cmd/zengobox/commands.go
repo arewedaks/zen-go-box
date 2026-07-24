@@ -10,6 +10,7 @@ import (
 	"github.com/arewedaks/zen-go-box/internal/netfilter"
 	"github.com/arewedaks/zen-go-box/internal/network"
 	"github.com/arewedaks/zen-go-box/internal/updater"
+	"github.com/arewedaks/zen-go-box/internal/web"
 )
 
 func init() {
@@ -153,6 +154,9 @@ var daemonCmd = &cobra.Command{
 			modWatcher.Start()
 			defer modWatcher.Stop()
 		}
+
+		// 4. Start Zashboard Web Server
+		web.StartServer(mgr)
 
 		select {} // Keep running
 	},
