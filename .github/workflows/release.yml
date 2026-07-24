@@ -59,7 +59,16 @@ jobs:
             exit 0
           fi
           
-          CAPTION="🚀 *ZenGoBox ${VERSION} Released!* %0A%0AAn Ultra-Fast & Portable Transparent Proxy Manager.%0A%0A📦 Magisk Module is ready for installation!"
+          # Generate simple changelog (last 5 commits)
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"• %s" | head -n 5)
+          else
+            CHANGELOG=$(git log -1 --pretty=format:"• %s")
+          fi
+          
+          # Use printf to properly format the caption with line breaks for Telegram
+          CAPTION=$(printf "ZenGoBox %s Released\n\nChangelog:\n%s\n\nThe Magisk Module is ready for installation." "${VERSION}" "${CHANGELOG}")
           
           # Jika ada TG_TOPIC_ID, kirim ke topik. Jika tidak, kirim ke chat utama.
           if [ -n "$TG_TOPIC_ID" ]; then
@@ -67,14 +76,12 @@ jobs:
               -F chat_id="${TG_CHAT_ID}" \
               -F message_thread_id="${TG_TOPIC_ID}" \
               -F document=@"${{ env.ZIP_FILE }}" \
-              -F caption="${CAPTION}" \
-              -F parse_mode="Markdown")
+              -F caption="${CAPTION}")
           else
             RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument" \
               -F chat_id="${TG_CHAT_ID}" \
               -F document=@"${{ env.ZIP_FILE }}" \
-              -F caption="${CAPTION}" \
-              -F parse_mode="Markdown")
+              -F caption="${CAPTION}")
           fi
           
           echo "Telegram Response: $RESPONSE"
