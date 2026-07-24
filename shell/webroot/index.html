@@ -73,6 +73,22 @@
             vertical-align: middle;
             margin-right: 10px;
         }
+
+        .terminal {
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #10b981;
+            text-align: left;
+            height: 150px;
+            overflow-y: auto;
+            margin-top: 15px;
+            display: none;
+            white-space: pre-wrap;
+            border: 1px solid var(--glass-border);
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -97,7 +113,8 @@
         </select>
         
         <button id="btn-setup">Start Setup Wizard</button>
-        <p id="setup-log" style="margin-top: 15px; font-size: 0.9rem; color: #10b981; display: none;"></p>
+        <div id="terminal" class="terminal"></div>
+        <p id="setup-log" style="margin-top: 15px; font-size: 0.9rem; color: #3b82f6; display: none;"></p>
     </div>
 
     <script>
@@ -106,6 +123,7 @@
         const btnSetup = document.getElementById('btn-setup');
         const coreSelect = document.getElementById('core-select');
         const setupLog = document.getElementById('setup-log');
+        const terminal = document.getElementById('terminal');
 
         async function checkDaemon() {
             try {
@@ -139,26 +157,42 @@
             btnSetup.disabled = true;
             btnSetup.innerHTML = '<div class="loader"></div> Installing...';
             setupLog.style.display = 'block';
+            terminal.style.display = 'block';
             
-            try {
-                setupLog.innerText = "Extracting configs and downloading assets...";
-                // Run setup command
-                await ksu.exec(`/data/adb/zengobox/bin/zengobox setup ${core}`);
-                
-                setupLog.innerText = "Starting proxy daemon...";
-                // Start daemon via service script
-                await ksu.exec(`sh /data/adb/modules/zengobox/service.sh`);
-                
-                setupLog.innerText = "Setup complete! Redirecting...";
-                // Wait for daemon to spin up
-                setTimeout(() => {
-                    document.location = 'http://127.0.0.1:9999/';
-                }, 3000);
-            } catch (err) {
-                alert("Setup failed: " + err);
-                btnSetup.disabled = false;
-                btnSetup.innerHTML = 'Start Setup Wizard';
-            }
+            setupLog.innerText = "Initializing background installer...";
+            terminal.innerText = "> Preparing environment...\n";
+
+            // Run setup command in background and redirect output to setup.log
+            const logFile = "/data/local/tmp/zengobox_setup.log";
+            await ksu.exec(`rm -f ${logFile}`);
+            await ksu.exec(`(/data/adb/zengobox/bin/zengobox setup ${core} > ${logFile} 2>&1) &`);
+            
+            // Poll the log file
+            const pollInterval = setInterval(async () => {
+                try {
+                    const res = await ksu.exec(`tail -n 20 ${logFile}`);
+                    if (res && res.out) {
+                        terminal.innerText = res.out;
+                        terminal.scrollTop = terminal.scrollHeight;
+                        
+                        // Check for completion
+                        if (res.out.includes("Setup complete!")) {
+                            clearInterval(pollInterval);
+                            setupLog.innerText = "Starting proxy daemon...";
+                            
+                            // Start daemon
+                            await ksu.exec(`sh /data/adb/modules/zengobox/service.sh`);
+                            
+                            setupLog.innerText = "All done! Redirecting to Zashboard...";
+                            setTimeout(() => {
+                                document.location = 'http://127.0.0.1:9999/';
+                            }, 2000);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Polling error", e);
+                }
+            }, 1000);
         });
 
         // Run check on load
