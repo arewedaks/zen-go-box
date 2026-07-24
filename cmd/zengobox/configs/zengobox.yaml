@@ -54,11 +54,6 @@ cgroup:
   blkio:
     enabled: false
 
-paths:
-  box_dir: "/data/adb/zengobox"
-  bin_dir: "/data/adb/zengobox/bin"
-  run_dir: "/data/adb/zengobox/run"
-  log_dir: "/data/adb/zengobox/run"
 
 subscription:
   clash_urls: []

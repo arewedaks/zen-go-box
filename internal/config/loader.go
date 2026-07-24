@@ -30,10 +30,18 @@ func Load(path string) (*Config, error) {
 		if filepath.Base(execDir) == "bin" {
 			baseDir = filepath.Dir(execDir)
 		}
-		cfg.Paths.BoxDir = baseDir
-		cfg.Paths.BinDir = filepath.Join(baseDir, "bin")
-		cfg.Paths.RunDir = filepath.Join(baseDir, "run")
-		cfg.Paths.LogDir = filepath.Join(baseDir, "run")
+		if cfg.Paths.BoxDir == "" || cfg.Paths.BoxDir == "/data/adb/zengobox" {
+			cfg.Paths.BoxDir = baseDir
+		}
+		if cfg.Paths.BinDir == "" || cfg.Paths.BinDir == "/data/adb/zengobox/bin" {
+			cfg.Paths.BinDir = filepath.Join(baseDir, "bin")
+		}
+		if cfg.Paths.RunDir == "" || cfg.Paths.RunDir == "/data/adb/zengobox/run" {
+			cfg.Paths.RunDir = filepath.Join(baseDir, "run")
+		}
+		if cfg.Paths.LogDir == "" || cfg.Paths.LogDir == "/data/adb/zengobox/run" {
+			cfg.Paths.LogDir = filepath.Join(baseDir, "run")
+		}
 	}
 
 	if err := cfg.Validate(); err != nil {
