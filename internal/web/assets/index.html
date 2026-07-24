@@ -22,9 +22,12 @@
                     <p>Master Control Panel</p>
                 </div>
             </div>
-            <div class="status-badge" id="status-badge">
-                <span class="dot"></span>
-                <span id="status-text">Connecting...</span>
+            <div class="header-right">
+                <button class="btn-icon" id="btn-settings" title="Settings">⚙️</button>
+                <div class="status-badge" id="status-badge">
+                    <span class="dot"></span>
+                    <span id="status-text">Connecting...</span>
+                </div>
             </div>
         </header>
 
@@ -63,6 +66,58 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal" style="display: none;">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2>⚙️ ZenGoBox Settings</h2>
+                <button class="btn-close" id="btn-close-settings">✖</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Proxy Core</label>
+                    <select id="setting-core" class="form-control">
+                        <option value="clash">Clash</option>
+                        <option value="sing-box">Sing-Box</option>
+                        <option value="xray">Xray</option>
+                        <option value="v2fly">V2fly</option>
+                        <option value="hysteria">Hysteria</option>
+                    </select>
+                </div>
+
+                <div class="form-group toggle-group">
+                    <label>Smart Wi-Fi Toggle</label>
+                    <label class="toggle-switch small">
+                        <input type="checkbox" id="setting-wifi">
+                        <span class="slider"></span>
+                    </label>
+                    <small>Auto-switch proxy based on Wi-Fi state</small>
+                </div>
+
+                <div class="form-group toggle-group">
+                    <label>Cronjob Auto-Updater</label>
+                    <label class="toggle-switch small">
+                        <input type="checkbox" id="setting-cron">
+                        <span class="slider"></span>
+                    </label>
+                    <small>Auto-download GeoIP/GeoSite & Subscriptions</small>
+                </div>
+
+                <div class="form-group toggle-group">
+                    <label>Custom Rules Injector</label>
+                    <label class="toggle-switch small">
+                        <input type="checkbox" id="setting-rules">
+                        <span class="slider"></span>
+                    </label>
+                    <small>Inject rules.yaml into subscriptions</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-save" id="btn-save-settings">Save & Restart Daemon</button>
+            </div>
+        </div>
     </div>
 
     <script src="/app.js"></script>

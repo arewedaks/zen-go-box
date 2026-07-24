@@ -37,6 +37,7 @@ func StartServer(mgr *core.Manager) {
 	mux.HandleFunc("/api/logs", s.handleLogs)
 	mux.HandleFunc("/api/start", s.handleStart)
 	mux.HandleFunc("/api/stop", s.handleStop)
+	mux.HandleFunc("/api/config", s.handleConfig)
 
 	s.srv = &http.Server{
 		Addr:    "127.0.0.1:9999",
@@ -112,4 +113,41 @@ func (s *Server) handleLogs(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	json.NewEncoder(w).Encode(map[string]interface{}{"logs": lines})
+}
+
+func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(s.mgr.Config())
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		var newCfg map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&newCfg); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Because JSON structure matches YAML, we can convert to JSON, then Unmarshal to struct
+		b, _ := json.Marshal(newCfg)
+		
+		cfg := s.mgr.Config()
+		if err := json.Unmarshal(b, cfg); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Save to file (assume default path)
+		configPath := filepath.Join(cfg.Paths.BoxDir, "zengobox.yaml")
+		if err := cfg.Save(configPath); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "saved"}`))
+		return
+	}
+	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 }

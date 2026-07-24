@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let autoScroll = true;
     let isProcessing = false;
+    let currentConfig = null;
+
+    // Settings Modal Elements
+    const btnSettings = document.getElementById('btn-settings');
+    const settingsModal = document.getElementById('settings-modal');
+    const btnCloseSettings = document.getElementById('btn-close-settings');
+    const btnSaveSettings = document.getElementById('btn-save-settings');
 
     // Toggle Auto Scroll
     btnScroll.addEventListener('click', () => {
@@ -113,4 +120,72 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchLogs();
     setInterval(fetchStatus, 3000);
     setInterval(fetchLogs, 2000);
+
+    // Settings Modal Logic
+    async function openSettings() {
+        try {
+            const res = await fetch('/api/config');
+            currentConfig = await res.json();
+            
+            // Populate form
+            document.getElementById('setting-core').value = currentConfig.Core.BinName || 'clash';
+            document.getElementById('setting-wifi').checked = currentConfig.Wifi.Enabled;
+            document.getElementById('setting-cron').checked = currentConfig.Schedule.Enabled;
+            document.getElementById('setting-rules').checked = currentConfig.Subscription.InjectRules;
+            
+            settingsModal.style.display = 'flex';
+        } catch (e) {
+            alert('Failed to load settings: ' + e.message);
+        }
+    }
+
+    async function saveSettings() {
+        if (!currentConfig) return;
+        
+        btnSaveSettings.disabled = true;
+        btnSaveSettings.textContent = 'Saving...';
+        
+        // Update config object
+        currentConfig.Core.BinName = document.getElementById('setting-core').value;
+        currentConfig.Wifi.Enabled = document.getElementById('setting-wifi').checked;
+        currentConfig.Schedule.Enabled = document.getElementById('setting-cron').checked;
+        currentConfig.Subscription.InjectRules = document.getElementById('setting-rules').checked;
+        
+        try {
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentConfig)
+            });
+            
+            if (res.ok) {
+                alert('Settings saved! Restarting proxy service to apply changes...');
+                await fetch('/api/stop', { method: 'POST' });
+                await new Promise(r => setTimeout(r, 1000));
+                await fetch('/api/start', { method: 'POST' });
+                
+                settingsModal.style.display = 'none';
+                fetchStatus();
+            } else {
+                const errText = await res.text();
+                alert('Failed to save settings: ' + errText);
+            }
+        } catch (e) {
+            alert('Error saving settings: ' + e.message);
+        } finally {
+            btnSaveSettings.disabled = false;
+            btnSaveSettings.textContent = 'Save & Restart Daemon';
+        }
+    }
+
+    btnSettings.addEventListener('click', openSettings);
+    btnCloseSettings.addEventListener('click', () => { settingsModal.style.display = 'none'; });
+    btnSaveSettings.addEventListener('click', saveSettings);
+    
+    // Close modal on outside click
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            settingsModal.style.display = 'none';
+        }
+    });
 });
