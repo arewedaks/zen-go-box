@@ -1,3 +1,7 @@
+## v1.0.18
+
+* Docs: Add Non-Destructive Config Management to README features
+
 ## v1.0.17
 
 * Fix: Add TPROXY DIVERT chain and force allow-lan for tethering
