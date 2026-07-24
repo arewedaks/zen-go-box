@@ -54,6 +54,16 @@ cgroup:
   blkio:
     enabled: false
 
+# ---------------------------------------------------
+# PATHS (Optional - Power Users Only)
+# ---------------------------------------------------
+# By default, ZenGoBox will automatically detect its location.
+# If you want to use custom directories, uncomment and edit below:
+# paths:
+#   box_dir: "/path/to/custom/zengobox"
+#   bin_dir: "/path/to/custom/zengobox/bin"
+#   run_dir: "/path/to/custom/zengobox/run"
+#   log_dir: "/path/to/custom/zengobox/run"
 
 subscription:
   clash_urls: []
